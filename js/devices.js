@@ -10,17 +10,29 @@ window.addEventListener("DOMContentLoaded", async () => {
     const cy = createCytoscapeInstance(container, elements);
 
     buildTreeMenu(elements, cy);
-    makeDraggableMenu(u.gI('tree-menu'));
+    const treeMenu = u.gI('tree-menu');
+    makeDraggableMenu(treeMenu);
+
+    // Ripristino posizione del tree e stato espansione
+    const savedTree = store.get('treeMenu', {});
+    if (savedTree.left && savedTree.top) {
+        treeMenu.style.left = savedTree.left;
+        treeMenu.style.top = savedTree.top;
+    }
+    if (savedTree.expanded === false) {
+        u.qAll('ul.tree-list', treeMenu).forEach(ul => ul.style.display = 'none');
+        u.qAll('.tree-label i', treeMenu).forEach(icon => icon.className = 'fa fa-plus-square');
+    }
 
     // CY → Menu Sync
     cy.on('tap', 'node', (e) => {
         const id = e.target.id();
-        const elx = u.q(`.card-node-det[d-id="${id}"]`);
-        if (elx) {
-            elx.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const cardEl = u.q(`.card-node-det[d-id="${id}"]`);
+        if (cardEl) {
+            cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
             u.qAll('.card-node-det.active').forEach(x => x.classList.remove('active'));
-            elx.classList.add('active');
-            elx.focus();
+            cardEl.classList.add('active');
+            cardEl.focus();
         }
     });
 
@@ -43,7 +55,7 @@ function buildTreeMenu(elements, cy) {
         .map(e => e.data);
 
     const edges = elements
-        .filter(e => e.data && e.data.group && e.data.group === 'edges' && e.data.source && e.data.target)
+        .filter(e => e.data && e.data.group === 'edges' && e.data.source && e.data.target)
         .map(e => e.data);
 
     const treeData = {};
@@ -62,7 +74,17 @@ function buildTreeMenu(elements, cy) {
     if (!content) return console.error("[TREE] #tree-menu-content mancante.");
 
     content.innerHTML = '';
-    const { controls, searchInput, toggleAll } = menuTreeControlsTemplate();
+    const { controls, searchInput, toggleMinimize } = menuTreeControlsTemplate();
+
+    // Nuovo bottone toggle folder
+    const toggleFolder = u.cE('button', {
+      class: 'btn btn-sm btn-light',
+      id: 'tree-toggle-folder',
+      title: 'Espandi/Comprimi tutti'
+    });
+    toggleFolder.innerHTML = '<i class="fas fa-folder"></i>';
+    controls.insertBefore(toggleFolder, toggleMinimize);
+
     content.appendChild(controls);
 
     const rootNodes = nodes.filter(n => n.type === 'MAIN');
@@ -84,45 +106,53 @@ function buildTreeMenu(elements, cy) {
         });
     });
 
-    toggleAll.onclick = () => {
-        const open = toggleAll.querySelector('i').classList.contains('fa-chevron-down');
-        toggleAll.querySelector('i').className = open ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
-        u.qAll('ul.tree-list', content).forEach(ul => ul.style.display = open ? 'none' : 'block');
+    let expanded = true;
+    toggleFolder.onclick = () => {
+        expanded = !expanded;
+        u.qAll('ul.tree-list', content).forEach(ul => ul.style.display = expanded ? 'block' : 'none');
+        u.qAll('.tree-label i', content).forEach(icon => icon.className = expanded ? 'fa fa-minus-square' : 'fa fa-plus-square');
+        const treeMenu = u.gI('tree-menu');
+        const style = window.getComputedStyle(treeMenu);
+        store.set('treeMenu', {
+            left: style.left,
+            top: style.top,
+            expanded
+        });
     };
 }
 
 function initTreeInteractions(container, cy) {
-  const spans = container.querySelectorAll('.tree-label');
-  spans.forEach(span => {
-    const id = span.dataset.id;
+    const spans = container.querySelectorAll('.tree-label');
+    spans.forEach(span => {
+        const id = span.dataset.id;
 
-    span.addEventListener('click', (e) => {
-      const ul = span.parentElement.querySelector('ul');
-      if (ul) {
-        const open = ul.style.display !== 'none';
-        ul.style.display = open ? 'none' : 'block';
-        const icon = u.q('i', span);
-        icon.className = open ? 'fa fa-plus-square' : 'fa fa-minus-square';
-      }
-      e.stopPropagation();
-    });
+        u.onC(span, (e) => {
+            const ul = span.parentElement.querySelector('ul');
+            if (ul) {
+                const open = ul.style.display !== 'none';
+                ul.style.display = open ? 'none' : 'block';
+                const icon = u.q('i', span);
+                icon.className = open ? 'fa fa-plus-square' : 'fa fa-minus-square';
+            }
+            e.stopPropagation();
+        });
 
-    span.addEventListener('mouseover', () => {
-      cy.nodes().not(`[id = "${id}"]`).addClass('faded');
-      cy.getElementById(id).removeClass('faded');
-    });
+        u.onOver(span, () => {
+            cy.nodes().not(`[id = "${id}"]`).addClass('faded');
+            cy.getElementById(id).removeClass('faded');
+        });
 
-    span.addEventListener('mouseout', () => {
-      cy.nodes().removeClass('faded');
-    });
+        u.onOut(span, () => {
+            cy.nodes().removeClass('faded');
+        });
 
-    span.addEventListener('dblclick', () => {
-      import('../devices.js').then(m => m.loadDeviceDetails(id));
-      container.querySelectorAll('.tree-label.active').forEach(x => x.classList.remove('active'));
-      span.classList.add('active');
-      cy.getElementById(id)?.select();
+        u.onDbl(span, () => {
+            import('../devices.js').then(m => m.loadDeviceDetails(id));
+            container.querySelectorAll('.tree-label.active').forEach(x => x.classList.remove('active'));
+            span.classList.add('active');
+            cy.getElementById(id)?.select();
+        });
     });
-  });
 }
 
 function makeDraggableMenu(menuEl) {
@@ -143,12 +173,19 @@ function makeDraggableMenu(menuEl) {
     });
     document.addEventListener('mouseup', () => {
         isDragging = false;
+        const style = window.getComputedStyle(menuEl);
+        const savedTree = store.get('treeMenu', {});
+        store.set('treeMenu', {
+            ...savedTree,
+            left: style.left,
+            top: style.top
+        });
     });
 }
 
 export async function loadDeviceDetails(deviceId) {
-  const sidepanel = u.gI("sidepanel-info");
-  const deviceInfo = u.gI("device-info");
+    const sidepanel = u.gI("sidepanel-info");
+    const deviceInfo = u.gI("device-info");
 
     try {
         const data = await post("/ws/ws_devices?/devices/get_device", { id: deviceId });
@@ -160,13 +197,13 @@ export async function loadDeviceDetails(deviceId) {
         deviceInfo.innerHTML = deviceDetailsTemplate(data);
         sidepanel.style.display = 'block';
 
-        u.gI("close-panel").onclick = () => {
+        u.onC(u.gI("close-panel"), () => {
             sidepanel.style.display = 'none';
-        };
+        });
 
-        u.gI("save-device").onclick = () => {
+        u.onC(u.gI("save-device"), () => {
             console.log("TODO: Salvataggio in arrivo...");
-        };
+        });
     } catch (err) {
         deviceInfo.innerHTML = "<p class='text-danger'>Errore nel caricamento</p>";
         console.error("[DETAILS] Errore caricamento:", err);
