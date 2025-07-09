@@ -1,0 +1,108 @@
+Guida all'utilizzo del modulo pages.js
+==============================================
+
+Panoramica
+----------
+Il file /js/pages.js implementa un router client-side in JavaScript moderno (ES6) per caricare dinamicamente pagine HTML modulari in una web app statica. 
+Tutti i contenuti vengono caricati all’interno del <div class="container"> di index.html, con supporto a:
+
+- Routing via hash (es. #/login/renew)
+- Caricamento e fallback automatico dei file HTML
+- Traduzioni centralizzate con sostituzione {chiave}
+- Callback post-caricamento per logica specifica
+- Interfaccia pronta per login multi-step (es. 2FA)
+
+
+
+Struttura file
+--------------
+- index.html            → pagina iniziale con <div id="loading"> e <div class="container">
+- /tmpl/                → cartella con pagine modulari (es. login/index.html)
+- /tmpl/error/404.html  → fallback se il file non esiste
+- /ws/ws_lang.php       → endpoint PHP che ritorna le traduzioni come JSON
+- /js/pages.js          → modulo principale
+
+
+
+Routing
+-------
+La logica di routing interpreta l'URL hash come percorso dei file:
+
+Esempi:
+- #/login           → /tmpl/login/index.html
+- #/login/renew     → /tmpl/login/renew/index.html
+- #/dashboard       → /tmpl/dashboard/index.html
+- (vuoto)           → /tmpl/login/index.html
+
+Se il file non esiste, verrà caricato /tmpl/error/404.html.
+
+
+
+Traduzioni
+----------
+Le chiavi nel formato `{chiave}` presenti nell’HTML vengono sostituite al caricamento tramite `window.lang`, che viene inizializzato da `/ws/ws_lang.php`.
+
+
+
+Esempio HTML:
+```html
+<h1>{login_title}</h1>
+<p>{login_intro}</p>
+
+
+
+Esempio JSON da ws_lang.php:
+----------------------------
+    {
+        "login_title": "Accesso",
+        "login_intro": "Inserisci le tue credenziali per accedere."
+    }
+
+
+
+Callback post-caricamento
+-------------------------
+
+È possibile definire funzioni personalizzate da eseguire dopo il caricamento di una specifica pagina, nella mappa router.postLoad.
+Esempio:
+
+    postLoad: {
+        'login': () => {
+            document.querySelector('form').addEventListener('submit', doLogin);
+        }
+    }
+
+
+
+Login multi-step
+----------------
+
+Il modulo gestisce un flusso di login via POST su ws/ws_login.php. Se la risposta indica uno step 2fa, viene automaticamente caricata la pagina #/2fa.
+
+
+
+Dipendenze
+----------
+    - HTML5 + JavaScript moderno (ES6 modules)
+    - Bootstrap 5 (caricato in index.html)
+    - PHP backend per le API /ws/
+
+
+
+Come avviare
+------------
+
+1 - Inserisci in index.html:
+    <script type="module" src="/js/pages.js"></script>
+
+2 - Definisci la lingua (opzionale):
+    <script>window.lang = {"login_title":"Login"}</script>
+
+3 - Prepara i file HTML in /tmpl/.
+
+4 - Naviga via hash nel browser:
+    http://?????????/index.html#/login/renew
+
+
+
+==============================================

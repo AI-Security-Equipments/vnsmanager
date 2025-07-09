@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <title>{{ t['reset.title'] }}</title>
+</head>
+<body class="bg-light d-flex align-items-center" style="min-height:100vh">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card shadow p-4">
+          <h4 class="mb-4 text-center">{{ t['reset.title'] }}</h4>
+          {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+          {% if masked %}<div class="alert alert-info">{{ masked }}</div>{% endif %}
+          <form method="POST" action="/renew.py">
+            <div class="mb-3">
+              <label for="username" class="form-label">{{ t['login.username'] }}</label>
+              <input type="text" name="username" id="username" class="form-control" required>
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn btn-warning">{{ t['form.submit'] }}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

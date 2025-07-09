@@ -1,0 +1,4 @@
+localhost
+vnsmanager_device
+root
+123456
