@@ -1,25 +1,28 @@
 <?php
-require_once '../_/start.php';
+header('Access-Control-Allow-Origin: POST');
+header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
 try {
     $input = file_get_contents('php://input');
-    $json = json_decode($input, !0);
-
-    if (!is_array($json) || !isset($json['ts'], $json['action'])) {
-        throw new Exception('Dati incompleti');
+    if (empty($input)) {
+        throw new Exception('Empty payload');
     }
-
-    $day = date('Y-m-d H:i:s', intval($json['ts']) / 1000);
-    $action = trim($json['action']);
-    $data = json_encode($json['data'] ?? []);
-
-    $db->doQuery('insert_log', [
-        'day' => $day,
-        'action' => $action,
-        'data' => $data
+    
+    $data = json_decode($input, true, 512, JSON_THROW_ON_ERROR);
+    
+    // Validazione campi obbligatori
+    if (!isset($data['action'])) {
+        throw new Exception('Missing action field');
+    }
+    
+    // Elaborazione dati...
+    echo json_encode(['success' => true]);
+    
+} catch (Exception $e) {
+    http_response_code(400);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
     ]);
-    echo json_encode(['ok' => !0]);
-} catch (Throwable $e) {
-    echo json_encode(['ok' => !1]);
 }

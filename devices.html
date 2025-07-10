@@ -11,6 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&display=swap" rel="stylesheet">
     <link href="css/devices.css" rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/icon.png">
+    <link rel="apple-touch-icon" href="img/icon.png">
     <style>
         body {
             overflow: hidden;
@@ -134,10 +136,6 @@
         <a href="#" class="text-decoration-none">Supporto</a>
     </div>
 
-    <div id="tree-menu" class="position-absolute bg-white border rounded p-2 shadow" style="top: 100px; left: 280px; width: 250px; z-index: 1040; cursor: move;">
-        <div id="tree-menu-content"></div>
-    </div>
-
     <div id="sidepanel-info" class="position-fixed end-0 top-0 bg-white border-start shadow p-3"
         style="width: 300px; height: 100%; display: none; z-index: 1040;">
         <button class="btn btn-sm btn-close float-end" onclick="this.parentElement.style.display='none'"></button>
@@ -150,6 +148,7 @@
         <h3 class="popover-header"></h3>
         <div class="popover-body"></div>
     </div>
+    <script src="js/bootstrap.bundle.min.js"></script>
     <script type="module" src="js/devices.js"></script>
 </body>
 
