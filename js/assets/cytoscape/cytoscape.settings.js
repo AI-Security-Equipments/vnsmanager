@@ -1,6 +1,7 @@
 import cytoscape from 'https://cdn.skypack.dev/cytoscape@3.26.0';
 import fcose from 'https://cdn.skypack.dev/cytoscape-fcose@2.2.0';
 import nodeHtmlLabel from 'https://cdn.skypack.dev/cytoscape-node-html-label@1.2.2';
+//import from 'https://cdn.skypack.dev/cytoscape-node-html-label@1.2.2';
 import { nodeCardTemplate } from '../../commons/render.js';
 import { store } from '../../commons/utility.js';
 

@@ -60,21 +60,21 @@ export const store = {
 
 // toaster + coda
 export const toast = {
-    activeToasts: new Set(),
-    show: (message, type = 'info', options = {}) => {
-        // Chiudi tutti i toast esistenti
-        toast.closeAll();
-        const container = getOrCreateToastContainer();
-        const toastId = `toast-${Date.now()}`;
-        const autohide = options.autohide ?? (type !== 'error');
-        const delay = type === 'error' ? 8000 : (options.delay || 1000);
-        const toastEl = u.cE('div', {
-            id: toastId,
-            class: `toast align-items-center text-white bg-${type} border-0`,
-            role: 'alert',
-            'aria-live': 'assertive',
-            'aria-atomic': 'true',
-            html: `
+  activeToasts: new Set(),
+  show: (message, type = 'info', options = {}) => {
+    // Chiudi tutti i toast esistenti
+    toast.closeAll();
+    const container = getOrCreateToastContainer();
+    const toastId = `toast-${Date.now()}`;
+    const autohide = options.autohide ?? (type !== 'error');
+    const delay = type === 'error' ? 8000 : (options.delay || 1000);
+    const toastEl = u.cE('div', {
+      id: toastId,
+      class: `toast align-items-center text-white bg-${type} border-0`,
+      role: 'alert',
+      'aria-live': 'assertive',
+      'aria-atomic': 'true',
+      html: `
                 <div class="d-flex">
                     <div class="toast-body">
                         ${message}
@@ -84,60 +84,60 @@ export const toast = {
                             data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
             `
-        });
+    });
 
-        container.appendChild(toastEl);
-        toast.activeToasts.add(toastId);
-        const bsToast = new bootstrap.Toast(toastEl, {
-            autohide,
-            delay
-        });
-        bsToast.show();
-        toastEl.addEventListener('hidden.bs.toast', () => {
-            toastEl.remove();
-            toast.activeToasts.delete(toastId);
-        });
-        return toastId;
-    },
+    container.appendChild(toastEl);
+    toast.activeToasts.add(toastId);
+    const bsToast = new bootstrap.Toast(toastEl, {
+      autohide,
+      delay
+    });
+    bsToast.show();
+    toastEl.addEventListener('hidden.bs.toast', () => {
+      toastEl.remove();
+      toast.activeToasts.delete(toastId);
+    });
+    return toastId;
+  },
 
-    closeAll: () => {
-        toast.activeToasts.forEach(id => {
-            const toastEl = document.getElementById(id);
-            if (toastEl) {
-                bootstrap.Toast.getInstance(toastEl)?.hide();
-            }
-        });
-        toast.activeToasts.clear();
-    },
+  closeAll: () => {
+    toast.activeToasts.forEach(id => {
+      const toastEl = document.getElementById(id);
+      if (toastEl) {
+        bootstrap.Toast.getInstance(toastEl)?.hide();
+      }
+    });
+    toast.activeToasts.clear();
+  },
 
-    // Shortcut methods
-    success: (m, o) => toast.show(m, 'success', { ...o, autohide: true, delay: 1000 }),
-    error: (m, o) => toast.show(m, 'danger', { ...o, autohide: false }),
-    warning: (m, o) => toast.show(m, 'warning', { ...o, autohide: true, delay: 3000 }),
-    info: (m, o) => toast.show(m, 'info', { ...o, autohide: true, delay: 2000 })
+  // Shortcut methods
+  success: (m, o) => toast.show(m, 'success', { ...o, autohide: true, delay: 1000 }),
+  error: (m, o) => toast.show(m, 'danger', { ...o, autohide: false }),
+  warning: (m, o) => toast.show(m, 'warning', { ...o, autohide: true, delay: 3000 }),
+  info: (m, o) => toast.show(m, 'info', { ...o, autohide: true, delay: 2000 })
 };
 
 // Helper functions using 'u'
 function getOrCreateToastContainer() {
-    return u.gI('toast-container') || (() => {
-        const container = u.cE('div', {
-            id: 'toast-container',
-            class: 'toast-container position-fixed top-0 end-0 p-3',
-            style: 'z-index: 1100'
-        });
-        document.body.appendChild(container);
-        return container;
-    })();
+  return u.gI('toast-container') || (() => {
+    const container = u.cE('div', {
+      id: 'toast-container',
+      class: 'toast-container position-fixed top-0 end-0 p-3',
+      style: 'z-index: 1100'
+    });
+    document.body.appendChild(container);
+    return container;
+  })();
 }
 
 function initToastBehavior(toastEl, options) {
-    const bsToast = new bootstrap.Toast(toastEl, {
-        autohide: options.autohide ?? true,
-        delay: options.delay ?? 5000
-    });
-    bsToast.show();
+  const bsToast = new bootstrap.Toast(toastEl, {
+    autohide: options.autohide ?? true,
+    delay: options.delay ?? 5000
+  });
+  bsToast.show();
 
-    u.on(toastEl, 'hidden.bs.toast', () => toastEl.remove());
+  u.on(toastEl, 'hidden.bs.toast', () => toastEl.remove());
 }
 
 // Versione con coda (opzionale)
@@ -145,23 +145,23 @@ const toastQueue = [];
 let isShowingToast = false;
 
 toast.queue = (message, type = 'info', options = {}) => {
-    toastQueue.push({ message, type, options });
-    processQueue();
+  toastQueue.push({ message, type, options });
+  processQueue();
 };
 
 function processQueue() {
-    if (!toastQueue.length || isShowingToast) return;
-    
-    isShowingToast = true;
-    const { message, type, options } = toastQueue.shift();
-    const toastId = toast.show(message, type, {
-        ...options,
-        autohide: true,
-        delay: options.delay ?? 3000
-    });
-    
-    u.on(u.gI(toastId), 'hidden.bs.toast', () => {
-        isShowingToast = false;
-        processQueue();
-    });
+  if (!toastQueue.length || isShowingToast) return;
+
+  isShowingToast = true;
+  const { message, type, options } = toastQueue.shift();
+  const toastId = toast.show(message, type, {
+    ...options,
+    autohide: true,
+    delay: options.delay ?? 3000
+  });
+
+  u.on(u.gI(toastId), 'hidden.bs.toast', () => {
+    isShowingToast = false;
+    processQueue();
+  });
 }

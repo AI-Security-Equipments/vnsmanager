@@ -321,7 +321,7 @@
   vertical-align: middle;
 }
 
-.tree-label:hover {
+.tree-label:hover, .tree-label.highlight {
   background-color: #ccc;
 }
 
