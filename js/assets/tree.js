@@ -1,6 +1,7 @@
 // File: assets/tree.js
 import { u, store } from '../commons/utility.js';
 import { loadDeviceDetails } from '../devices.js';
+import { cytoscapeControlsTemplate } from '../commons/render.js';
 import { iconMap } from '../commons/icons.js';
 
 let treeState = {
@@ -48,6 +49,8 @@ export function tree(elements, cy) {
     makeResizable(wrapper, resizeHandle, 'treeMenuPosition');
     initTreeInteractions(rootContainer);
     addTypeFilterButtons(elements);
+    initCytoscapeControls(elements);
+    trackNodePositionChanges();
 }
 
 export function update(elements) {
@@ -384,5 +387,58 @@ function applyTypeFilters(filters) {
         } else {
             li.style.display = 'none';
         }
+    });
+}
+
+function initCytoscapeControls(elements) {
+    const currentLayout = store.get('cyLayout') || 'grid';
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = cytoscapeControlsTemplate(currentLayout);
+    document.body.appendChild(wrapper.firstElementChild);
+
+    const layoutSelect = document.getElementById('cy-layout');
+    layoutSelect.onchange = () => {
+        const layout = layoutSelect.value;
+        store.set('cyLayout', layout);
+        if (cyRef) cyRef.layout({ name: layout }).run();
+    };
+
+    const btnWrapper = document.getElementById('cy-type-buttons');
+    addTypeFilterButtons(elements, btnWrapper);
+
+    document.getElementById('cy-edit-edges').onclick = () => {
+        const enabled = !!cyRef.edgehandles('getEnabled')?.enabled;
+        if (enabled) {
+            cyRef.edgehandles('disable');
+            event.target.classList.remove('btn-success');
+        } else {
+            cyRef.edgehandles('enable');
+            event.target.classList.add('btn-success');
+        }
+    };
+
+    document.getElementById('cy-del-edge').onclick = () => {
+        const sel = cyRef.$('edge:selected');
+        if (sel.length) sel.remove();
+    };
+
+    document.getElementById('cy-del-node').onclick = () => {
+        const sel = cyRef.$('node:selected');
+        if (sel.length) sel.remove();
+    };
+}
+
+function trackNodePositionChanges() {
+    if (!cyRef) return;
+    const saved = store.get('cyNodePositions', {});
+    cyRef.nodes().forEach(n => {
+        const pos = saved[n.id()];
+        if (pos) n.position(pos);
+    });
+
+    cyRef.on('dragfree', 'node', e => {
+        const n = e.target;
+        saved[n.id()] = n.position();
+        store.set('cyNodePositions', saved);
     });
 }

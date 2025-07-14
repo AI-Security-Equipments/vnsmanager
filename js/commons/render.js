@@ -41,3 +41,24 @@ export function deviceDetailsTemplate(data) {
     </div>
   `;
 }
+
+export function cytoscapeControlsTemplate(currentLayout = 'grid') {
+  const layouts = ['grid', 'circle', 'concentric', 'cose', 'breadthfirst', 'fcose'];
+  return `
+    <div id="cytoscape-controls" class="cy-float-menu">
+      <div class="cy-toggle-area">
+        <i class="fas fa-cogs"></i>
+      </div>
+      <div class="cy-menu-body">
+        <select id="cy-layout" class="form-select form-select-sm mb-2">
+          ${layouts.map(name => `<option value="${name}" ${name === currentLayout ? 'selected' : ''}>${name}</option>`).join('')}
+        </select>
+        <div class="cy-label">Filtra per tipo</div>
+        <div id="cy-type-buttons" class="d-flex flex-wrap gap-1 mb-2"></div>
+        <button id="cy-edit-edges" class="btn btn-sm btn-secondary w-100 mb-1"><i class="fas fa-pencil-alt"></i></button>
+        <button id="cy-del-edge" class="btn btn-sm btn-danger w-100 mb-1"><i class="fas fa-unlink"></i></button>
+        <button id="cy-del-node" class="btn btn-sm btn-danger w-100"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  `;
+}
