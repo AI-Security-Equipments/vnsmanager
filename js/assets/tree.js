@@ -397,7 +397,8 @@ function initCytoscapeControls(elements) {
     document.body.appendChild(wrapper.firstElementChild);
 
     const layoutSelect = document.getElementById('cy-layout');
-    layoutSelect.onchange = () => {
+    layoutSelect.onchange = (event) => {
+         if (!event.isTrusted) return;
         const layout = layoutSelect.value;
         store.set('cyLayout', layout);
         if (cyRef) cyRef.layout({ name: layout }).run();

@@ -6,6 +6,7 @@ import { deviceDetailsTemplate } from './commons/render.js';
 import { tree } from './assets/tree.js';
 
 let cyInstance = null;
+let treeInitialized = false;
 
 window.addEventListener("DOMContentLoaded", async () => {
     try {
@@ -17,8 +18,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         if (!Array.isArray(elements)) return toast.error("Dati dispositivi non validi");
 
         cyInstance = createCytoscapeInstance(container, elements);
-        cyInstance.on('layoutstop', () => tree(elements, cyInstance));
-
+        waitForCardsAndThenInitTree(elements, cyInstance);
         toast.success("Dispositivi caricati");
     } catch (e) {
         toast.error(`Errore caricamento: ${e.message}`);
@@ -40,4 +40,18 @@ export async function loadDeviceDetails(deviceId) {
         toast.error(`Errore: ${err.message}`);
         box.innerHTML = '<p class="text-danger">Errore nel caricamento</p>';
     }
+}
+
+function waitForCardsAndThenInitTree(elements, cy) {
+    let attempts = 0;
+    const checkReady = () => {
+        const allCardsReady = document.querySelectorAll('.card-node').length >= elements.filter(e => e.group !== 'edges').length;
+        if (allCardsReady || attempts > 20) {
+            tree(elements, cy);
+        } else {
+            attempts++;
+            requestAnimationFrame(checkReady);
+        }
+    };
+    requestAnimationFrame(checkReady);
 }
