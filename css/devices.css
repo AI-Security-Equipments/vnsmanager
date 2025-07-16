@@ -91,6 +91,7 @@
       pointer-events: none;
       transition: all 0.6s ease;
       overflow-x: hidden;
+      cursor: grab;
     }
 
     .card-node-det:hover {
@@ -216,6 +217,20 @@
     .node-actions {
       margin-top: 8px;
     }
+
+.node-key {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 14px;
+  color: #bbb;
+  opacity: 0.5;
+}
+
+.node-key.active {
+  color: #ffc107; /* giallo warning */
+  opacity: 1;
+}
 
     /* Stili per il pannello dettagli */
     #nodeDetails {
@@ -508,3 +523,13 @@
       color: #ccc;
       margin-bottom: 5px;
     }
+
+
+#device-tab-panel.right-expand {
+  top: 60px;
+  left: 250px; /* larghezza del tree-menu */
+  bottom: 0;
+  width: calc(100% - 250px);
+  border-left: 1px solid #ccc;
+  z-index: 1060;
+}

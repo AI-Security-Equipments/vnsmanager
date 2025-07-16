@@ -13,7 +13,7 @@ class devices {
                 $x = $this->get_all();
                 break;
             case 'get_device':
-                $x = $this->set($b);
+                $x = $this->get_device($b);
                 break;
         }
         echo $x;
@@ -103,7 +103,6 @@ class devices {
             default                             => 40    // DEVICE generico
         };
     }
-
 
     // Crea un edge per JS e incrementa automaticamente l'ID
     private function buildEdge(string|int $source, string|int $target, int &$edgeId): array {
@@ -196,7 +195,19 @@ class devices {
 
     private function get_device($id) {
         global $db;
-        return json_encode($db->doQuery("get_single_devices", ['id' => $id]));
+
+$_SESSION["debug"] = false;
+
+        $device = $db->doQuery( "get_single_device", [ "id" => $id ])[0] ?? null;
+        if (!$device) return ['ok' => false, 'html' => '<p class="text-danger">Device non trovato.</p>'];
+        $auth    = !empty($device['DE_user']) || !empty($device['DE_password']);
+        $mqtt    = $db->doQuery( "get_single_mqtt", [ "id" => $id ])[0] ?? null;
+        $onvif   = $db->doQuery( "get_single_onvif", [ "id" => $id ])[0] ?? null;
+        $actions = $db->doQuery( "get_single_action", [ "id" => $id ])[0] ?? null;
+
+        $html = include 'device_tabs.php';
+        
+        return json_encode([ 'ok' => true, 'html' => $html, 'label' => $device['DE_alias'] ?: $device['DE_vendor'] ?: $device['DE_type'] ?: 'Device' ]);
     }
 }
 $G = [];

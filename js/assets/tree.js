@@ -2,7 +2,6 @@
 import { u, store, icons } from '../commons/utility.js';
 import { loadDeviceDetails } from '../devices.js';
 import { cytoscapeControlsTemplate, buildTreeMenuShell, renderTreeFiltersContainer } from '../commons/render.js';
-import { iconMap } from '../commons/icons.js';
 
 let treeState = {
     wrapper: null,
@@ -16,7 +15,7 @@ let treeState = {
 let cyRef = null;
 let treeHoverTimeout = null;
 
-export function tree(elements, cy) {
+export function tree(elements, cy, { onClickLabel } = {}) {
     if (!elements || !elements.length) return;
     if (cy) cyRef = cy;
 
@@ -50,7 +49,7 @@ export function tree(elements, cy) {
     makeDraggable(wrapper, dragHandle, 'treeMenuPosition');
     makeResizable(wrapper, resizeHandle, 'treeMenuPosition');
     setupTreePinToggle(wrapper, treeState.pinToggle, treeState.dragHandle);
-    initTreeInteractions(rootContainer);
+    initTreeInteractions(rootContainer, onClickLabel);
     addTypeFilterButtons(elements);
     initCytoscapeControls(elements);
     trackNodePositionChanges();
@@ -164,23 +163,28 @@ function applySavedNodeState(ul, state) {
     });
 }
 
-function initTreeInteractions(container) {
+function initTreeInteractions(container, onClickLabel) {
     const state = store.get('treeNodes', {});
 
     container.addEventListener('click', e => {
         const span = findTreeSpan(e);
-        if (!span) return;
+        const id = span?.dataset?.id;
+        if (!id) return;
+        if (typeof onClickLabel === 'function') {
+            e.stopPropagation();
+            return onClickLabel(id, span);
+        }
         toggleTreeItem(span, span.parentElement.querySelector('ul')?.style.display === 'none', state);
         store.set('treeNodes', state);
         e.stopPropagation();
     });
 
-    container.addEventListener('dblclick', async e => {
+/*    container.addEventListener('dblclick', async e => {
         const span = findTreeSpan(e);
         if (!span?.dataset.id) return;
         span.classList.add('active');
         await loadDeviceDetails(span.dataset.id);
-    });
+    }); */
 
     container.addEventListener('mouseover', e => {
         const span = findTreeSpan(e);
@@ -447,7 +451,7 @@ function setupTreePinToggle(wrapper, pinBtn) {
     });
 }
 
-function applyPinnedStyle(wrapper) {
+export function applyPinnedStyle(wrapper) {
     wrapper.style.top = '60px';
     wrapper.style.left = '0';
     wrapper.style.height = '100%';
@@ -457,7 +461,7 @@ function applyPinnedStyle(wrapper) {
     wrapper.classList.add('pinned');
 }
 
-function resetTreeMenuStyle(wrapper) {
+export function resetTreeMenuStyle(wrapper) {
     const savedPos = store.get('treeMenuPosition', {});
     wrapper.style.top = savedPos.top || '100px';
     wrapper.style.left = savedPos.left || '280px';

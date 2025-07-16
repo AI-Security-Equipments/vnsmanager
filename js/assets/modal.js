@@ -104,6 +104,6 @@ function setupControls(modal) {
     };
 }
 
-export function openModalForDevice({ id, title, url }) {
+export function modal({ id, title, url }) {
     createModal({ id, title, url });
 }

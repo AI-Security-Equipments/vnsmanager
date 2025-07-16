@@ -4,6 +4,7 @@ import nodeHtmlLabel from 'https://cdn.skypack.dev/cytoscape-node-html-label@1.2
 import edgehandles from 'https://cdn.skypack.dev/cytoscape-edgehandles@4.0.1';
 import { nodeCardTemplate } from '../../commons/render.js';
 import { store } from '../../commons/utility.js';
+import { initControlledDrag } from '../../commons/initControlledDrag.js';
 
 cytoscape.use(fcose);
 cytoscape.use(nodeHtmlLabel);
@@ -53,7 +54,7 @@ const cytoscapeStyle = [
   }*/
 ];
 
-// Layout FCoSE
+// Layout 
 const layoutOptions = {
   name: 'cose',
   animate: true,
@@ -95,8 +96,9 @@ export function createCytoscapeInstance(container, elements) {
       valignBox: 'center',
       cssClass: 'card-node',
       tpl: (data) => nodeCardTemplate(data)
-    }
-  ]);
+    }], {
+      enablePointerEvents: true
+    });
 
   // Salvataggio posizione nodo dopo trascinamento
   cy.on('dragfree', (e) => {

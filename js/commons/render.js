@@ -2,28 +2,46 @@
 import { u } from './utility.js'
 
 export function nodeCardTemplate(data) {
+  const url = data.https || data.http || '';
+  const rtsp = data.rtsp || '';
+  const keyIcon = data.hasCreds
+    ? '<i class="fas fa-key node-key active" title="Credenziali disponibili"></i>'
+    : '<i class="fas fa-key node-key" title="Nessuna credenziale"></i>';
+  const keyInfoIcon = `
+    <i class="fas fa-key node-key ${data.hasCreds ? 'active' : ''}"
+       title="${data.hasCreds ? 'Credenziali disponibili' : 'Nessuna credenziale'}"></i>`;
+
   return `
     <div class="card-node-det ${data.type}" data-id="${data.id}" role="button" tabindex="0"
          aria-label="${data.alias || data.label}, tipo ${data.type}"
          title="${data.alias || data.label} [${data.type}] - ${data.ip}">
+      ${keyInfoIcon}
       <div class="node-title ${data.status}">
         <i class="fas fa-${data.type}" aria-hidden="true"></i> ${data.label}
+        ${keyIcon}   
       </div>
-      <div class="node-info">
+      <div class="node-info drag-handle">
         <div class="node-type">${data.type}</div>
         <div class="node-ip">${data.ip}</div>
         <div class="node-mac">${data.mac}</div>
-        ${data.isVirtual ? '' : `
-          <div class="btn-group node-actions">
-            <a href="#" class="btn btn-vnsmanager" title="Apri interfaccia"><i class="fas fa-square-arrow-up-right"></i></a>
-            <a href="#" class="btn btn-vnsmanager" title="Visualizza video"><i class="fas fa-video"></i></a>
-            <a href="#" class="btn btn-vnsmanager ${!!data.hasCreds ? '' : 'deactivated'}" title="Credenziali"><i class="fas fa-key"></i></a>
-            <a href="#" class="btn btn-vnsmanager" title="Informazioni"><i class="fas fa-info"></i></a>
-          </div>`
-    }
       </div>
-    </div>
-  `;
+      <div class="btn-group node-actions">
+          ${url ? `
+            <a href="#" class="btn btn-vnsmanager" title="Apri interfaccia" data-url="${url}">
+              <i class="fas fa-square-arrow-up-right"></i>
+            </a>` : ''}
+          ${rtsp ? `
+            <a href="#" class="btn btn-vnsmanager" title="Visualizza video" data-url="${rtsp}">
+              <i class="fas fa-video"></i>
+            </a>` : ''}
+          <a href="#" class="btn btn-vnsmanager" title="Informazioni">
+            <i class="fas fa-info"></i>
+          </a>
+          <a href="#" class="btn btn-vnsmanager btn-drag drag-handle" title="Trascina nodo">
+            <i class="fas fa-arrows-alt"></i>
+          </a>
+        </div>
+    </div>`;
 }
 
 export function buildTreeMenuShell() {
@@ -114,19 +132,7 @@ export function renderMinimizedIcon({ id, title, type = 'default' }) {
 }
 
 export function deviceDetailsTemplate(data) {
-  return `
-    <h6>${data.label || data.vendor}</h6>
-    <p><strong>IP:</strong> ${data.ip}</p>
-    <p><strong>MAC:</strong> ${data.mac}</p>
-    <p><strong>Vendor:</strong> ${data.vendor || '-'}</p>
-    <p><strong>Tipo:</strong> ${data.type}</p>
-    <p><strong>Stato:</strong> ${data.status || '-'}</p>
-    <hr>
-    <div class="d-flex justify-content-between">
-      <button class="btn btn-sm btn-primary" id="save-device" title="Salva modifiche"><i class="fas fa-save"></i> Salva</button>
-      <button class="btn btn-sm btn-secondary" id="close-panel" title="Chiudi pannello"><i class="fas fa-times"></i> Chiudi</button>
-    </div>
-  `;
+  return data.html;
 }
 
 export function cytoscapeControlsTemplate(currentLayout = 'grid') {
