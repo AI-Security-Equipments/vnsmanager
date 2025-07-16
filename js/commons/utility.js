@@ -1,4 +1,6 @@
 // File: commons/utility.js
+import { iconMap } from './icons.js';
+
 
 export const u = {
   gI: (id, ctx = document) => ctx.getElementById(id),
@@ -38,6 +40,14 @@ export const u = {
     events.forEach((ev, i) => el?.removeEventListener(ev, handlers[i]));
   }
 };
+
+export function icons(type = '', options = {}) {
+    const name = type.toLowerCase();
+    const iconClass = iconMap[name] || 'fa-solid fa-circle-question';
+    if (options.onlyClass) return iconClass;
+    return `<i class="${iconClass}" title="${name}" aria-label="${name}"></i>`;
+}
+
 
 export const store = {
   get: (key, fallback = null) => {

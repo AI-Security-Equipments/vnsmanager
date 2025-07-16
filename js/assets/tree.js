@@ -1,7 +1,7 @@
 // File: assets/tree.js
-import { u, store } from '../commons/utility.js';
+import { u, store, icons } from '../commons/utility.js';
 import { loadDeviceDetails } from '../devices.js';
-import { cytoscapeControlsTemplate } from '../commons/render.js';
+import { cytoscapeControlsTemplate, buildTreeMenuShell, renderTreeFiltersContainer } from '../commons/render.js';
 import { iconMap } from '../commons/icons.js';
 
 let treeState = {
@@ -14,6 +14,7 @@ let treeState = {
     dragHandle: null
 };
 let cyRef = null;
+let treeHoverTimeout = null;
 
 export function tree(elements, cy) {
     if (!elements || !elements.length) return;
@@ -26,10 +27,11 @@ export function tree(elements, cy) {
         toggleFolder,
         toggleMinimize,
         resizeHandle,
-        dragHandle
+        dragHandle,
+        pinToggle
     } = buildTreeMenuShell();
 
-    treeState = { wrapper, rootContainer, searchInput, toggleFolder, toggleMinimize, resizeHandle, dragHandle };
+    treeState = { wrapper, rootContainer, searchInput, toggleFolder, toggleMinimize, resizeHandle, dragHandle, pinToggle };
 
     const savedPos = store.get('treeMenuPosition', {});
     ['left', 'top', 'width'].forEach(k => { if (savedPos[k]) wrapper.style[k] = savedPos[k] });
@@ -47,6 +49,7 @@ export function tree(elements, cy) {
     setupTreeMenuEvents({ toggleFolder, toggleMinimize, searchInput });
     makeDraggable(wrapper, dragHandle, 'treeMenuPosition');
     makeResizable(wrapper, resizeHandle, 'treeMenuPosition');
+    setupTreePinToggle(wrapper, treeState.pinToggle, treeState.dragHandle);
     initTreeInteractions(rootContainer);
     addTypeFilterButtons(elements);
     initCytoscapeControls(elements);
@@ -181,40 +184,49 @@ function initTreeInteractions(container) {
 
     container.addEventListener('mouseover', e => {
         const span = findTreeSpan(e);
-        if (span?.dataset.id) highlightCardAndTree(span.dataset.id);
+        if (span?.dataset.id) highlightCardAndTree(span.dataset.id, true);
     });
 
-    container.addEventListener('mouseout', () => highlightCardAndTree('', false));
+    container.addEventListener('mouseout', () => highlightCardAndTree(''));
 
     u.qAll('.card-node').forEach(card => {
         const det = card.querySelector('.card-node-det');
         const id = det?.dataset.id;
         if (!id) return;
-        card.onmouseenter = () => highlightCardAndTree(id);
-        card.onmouseleave = () => highlightCardAndTree('', false);
+        card.onmouseenter = () => {
+            highlightCardAndTree(id);
+            const span = u.q(`.tree-label[data-id="${id}"]`);
+            if (span) { span.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' }); }
+        }
+        card.onmouseleave = () => highlightCardAndTree('');
     });
 }
 
-function highlightCardAndTree(id, fade = true) {
+function highlightCardAndTree(id, zoom = false) {
+    // Card opacity
     u.qAll('.card-node').forEach(card => {
         const det = card.querySelector('.card-node-det');
         const cid = det?.dataset.id;
-        card.style.opacity = (cid !== id && fade) ? 0.5 : '';
+        const isActive = cid === id;
+        card.style.opacity = (cid !== id && id) ? 0.5 : '';
+        card.style.zIndex = isActive ? '1000' : '';
     });
 
+    // Tree highlight
     u.qAll('.tree-label').forEach(span => {
         const sid = span.dataset.id;
         span.classList.toggle('highlight', sid === id);
     });
 
-    if (cyRef && id) {
-        const ele = cyRef.$id(id);
-        if (ele && ele.length) {
-            cyRef.animate({
-                center: { eles: ele },
-                zoom: 1.2
-            }, { duration: 300 });
-        }
+    // Zoom solo se richiesto
+    if (cyRef && id && zoom) {
+        clearTimeout(treeHoverTimeout);
+        treeHoverTimeout = setTimeout(() => {
+            const ele = cyRef.$id(id);
+            if (ele && ele.length) {
+                cyRef.animate({ center: { eles: ele } }, { duration: 600 });
+            }
+        }, 500);
     }
 }
 
@@ -273,37 +285,6 @@ function enableTreeKeyboardNav(container) {
     setTimeout(() => focusItem(0), 500);
 }
 
-function buildTreeMenuShell() {
-    const wrapper = document.createElement('div');
-    wrapper.id = 'tree-menu';
-    wrapper.className = 'position-absolute bg-white border rounded shadow';
-    wrapper.style.cssText = 'top: 100px; left: 280px; width: 250px; z-index: 1040;';
-
-    wrapper.innerHTML = `
-    <div id="tree-controls" class="tree-controls d-flex align-items-center gap-2 p-2 border-bottom tree-header">
-      <input type="text" class="form-control form-control-sm tree-search" placeholder="Cerca dispositivo..." id="tree-search" aria-label="Cerca dispositivo">
-      <button class="btn btn-sm btn-light" id="tree-toggle-folder" title="Espandi/Comprimi tutti"><i class="fas fa-folder-minus"></i></button>
-      <button class="btn btn-sm btn-light" id="tree-minimize" title="Riduce schermata"><i class="fas fa-compress"></i></button>
-      <button class="btn btn-sm btn-light" id="tree-drag-handle" title="Sposta pannello"><i class="fas fa-arrows-alt"></i></button>
-    </div>
-    <div class="tree-filters d-flex flex-wrap gap-1 px-2 pb-2"></div>
-    <div id="tree-menu-content" class="p-2">
-      <div class="tree-root-nodes" role="tree"></div>
-    </div>
-    <div class="resize-handle"></div>
-  `;
-
-    return {
-        wrapper,
-        rootContainer: wrapper.querySelector('.tree-root-nodes'),
-        searchInput: wrapper.querySelector('#tree-search'),
-        toggleFolder: wrapper.querySelector('#tree-toggle-folder'),
-        toggleMinimize: wrapper.querySelector('#tree-minimize'),
-        resizeHandle: wrapper.querySelector('.resize-handle'),
-        dragHandle: wrapper.querySelector('#tree-drag-handle')
-    };
-}
-
 function makeResizable(el, handle, key = 'treeMenuPosition') {
     let startX, startWidth;
     const onMouseMove = e => {
@@ -346,34 +327,35 @@ function makeDraggable(menu, handle, key = 'treeMenuPosition') {
     });
 }
 
-
 function addTypeFilterButtons(elements) {
-    const types = [...new Set(elements.map(e => e.data?.type).filter(t => t && !['MAIN', 'SUBNET', 'TYPE'].includes(t)))].sort();
+    const types = [...new Set(
+        elements.map(e => e.data?.type)
+                .filter(t => t && !['MAIN', 'SUBNET', 'TYPE'].includes(t))
+    )].sort();
+
     const activeFilters = new Set(store.get('treeTypeFilters', []));
     const container = u.q('.tree-filters');
     if (!container) return;
-    container.innerHTML = ''; // pulizia
-
+    container.innerHTML = '';
     types.forEach(type => {
         const btn = u.cE('button', {
-            class: `btn btn-sm btn-dark d-flex align-items-center gap-1${activeFilters.has(type) ? ' active' : ''}`,
+            class: `btn btn-sm btn-light d-flex align-items-center justify-content-center${activeFilters.has(type) ? ' active' : ''}`,
             'data-type': type,
-            html: `<i class="fas fa-cube"></i> ${type}`
+            title: type,
+            'aria-label': type,
+            html: icons(type) // 👈 genera l’HTML dell’icona per il tipo
         });
-
         u.onC(btn, () => {
             btn.classList.toggle('active');
             const newFilters = u.qAll('.tree-filters .btn.active').map(b => b.dataset.type);
             store.set('treeTypeFilters', newFilters);
             applyTypeFilters(newFilters);
         });
-
         container.appendChild(btn);
     });
-
-    // Applicazione iniziale
     applyTypeFilters(activeFilters);
 }
+
 
 function applyTypeFilters(filters) {
     const active = Array.from(filters);
@@ -381,11 +363,10 @@ function applyTypeFilters(filters) {
 
     labels.forEach(label => {
         const type = label.dataset.type;
-        const li = label.closest('li');
         if (!active.length || active.includes(type)) {
-            li.style.display = '';
+            label.style.display = '';
         } else {
-            li.style.display = 'none';
+            label.style.display = 'none';
         }
     });
 }
@@ -442,4 +423,46 @@ function trackNodePositionChanges() {
         saved[n.id()] = n.position();
         store.set('cyNodePositions', saved);
     });
+}
+
+function setupTreePinToggle(wrapper, pinBtn) {
+    const pinned = store.get('treeMenuPinned', false);
+
+    if (pinned) {
+        applyPinnedStyle(wrapper);
+        pinBtn.querySelector('i').classList.replace('fa-thumbtack', 'fa-thumbtack-slash');
+    }
+
+    u.onC(pinBtn, () => {
+        const isPinned = wrapper.classList.toggle('pinned');
+        store.set('treeMenuPinned', isPinned);
+
+        if (isPinned) {
+            applyPinnedStyle(wrapper);
+            pinBtn.querySelector('i').classList.replace('fa-thumbtack', 'fa-thumbtack-slash');
+        } else {
+            resetTreeMenuStyle(wrapper);
+            pinBtn.querySelector('i').classList.replace('fa-thumbtack-slash', 'fa-thumbtack');
+        }
+    });
+}
+
+function applyPinnedStyle(wrapper) {
+    wrapper.style.top = '60px';
+    wrapper.style.left = '0';
+    wrapper.style.height = '100%';
+    wrapper.style.width = '250px';
+    wrapper.style.borderRadius = '0';
+    wrapper.style.borderRight = '1px solid #ccc';
+    wrapper.classList.add('pinned');
+}
+
+function resetTreeMenuStyle(wrapper) {
+    const savedPos = store.get('treeMenuPosition', {});
+    wrapper.style.top = savedPos.top || '100px';
+    wrapper.style.left = savedPos.left || '280px';
+    wrapper.style.width = savedPos.width || '250px';
+    wrapper.style.height = '';
+    wrapper.style.borderRadius = '';
+    wrapper.classList.remove('pinned');
 }

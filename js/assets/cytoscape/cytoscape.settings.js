@@ -55,9 +55,9 @@ const cytoscapeStyle = [
 
 // Layout FCoSE
 const layoutOptions = {
-  name: 'fcose',
+  name: 'cose',
   animate: true,
-  fit: true,
+  fit: false,
   randomize: false,
   padding: 100,
   nodeRepulsion: (node) => {
@@ -80,7 +80,10 @@ export function createCytoscapeInstance(container, elements) {
     container,
     elements,
     style: cytoscapeStyle,
-    layout: layoutOptions
+    layout: layoutOptions,
+    wheelSensitivity: 0.1,  // Rende lo zoom più lento (default è 1)
+    motionBlur: true,       // Effetto visivo più fluido durante zoom/pan
+    pixelRatio: 'auto'      // Ottimizza rendering per DPI schermo
   });
 
   cy.nodeHtmlLabel([
