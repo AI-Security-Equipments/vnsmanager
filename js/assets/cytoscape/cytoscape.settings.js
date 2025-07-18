@@ -4,7 +4,6 @@ import nodeHtmlLabel from 'https://cdn.skypack.dev/cytoscape-node-html-label@1.2
 import edgehandles from 'https://cdn.skypack.dev/cytoscape-edgehandles@4.0.1';
 import { nodeCardTemplate } from '../../commons/render.js';
 import { store } from '../../commons/utility.js';
-import { initControlledDrag } from '../../commons/initControlledDrag.js';
 
 cytoscape.use(fcose);
 cytoscape.use(nodeHtmlLabel);

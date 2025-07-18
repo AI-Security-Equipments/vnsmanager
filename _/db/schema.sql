@@ -1,4 +1,4 @@
--- Schema generato il Wed Jul 16 17:23:24 CEST 2025
+-- Schema generato il Fri Jul 18 10:48:07 CEST 2025
 CREATE DATABASE IF NOT EXISTS `vnsmanager_device`;
 USE `vnsmanager_device`;
 
@@ -89,6 +89,31 @@ CREATE TABLE IF NOT EXISTS `_ilog_data` (
   `ILD_created` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`ILD_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `_imac_vendors`
+--
+
+DROP TABLE IF EXISTS `_imac_vendors`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE IF NOT EXISTS `_imac_vendors` (
+  `MV_id` int NOT NULL AUTO_INCREMENT,
+  `MV_mac` varchar(15) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `MV_vendor` varchar(120) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `MV_family` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `MV_private` int DEFAULT NULL,
+  `MV_type` varchar(4) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `MV_custom_type` varchar(20) NOT NULL,
+  `MV_custom_type_ver` int NOT NULL DEFAULT '1',
+  `MV_update` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  PRIMARY KEY (`MV_id`),
+  UNIQUE KEY `Mac` (`MV_mac`),
+  UNIQUE KEY `Family` (`MV_family`,`MV_mac`) USING BTREE,
+  KEY `Private_2` (`MV_private`,`MV_type`,`MV_update`),
+  KEY `OUI` (`MV_mac`,`MV_custom_type`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=53919 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -352,6 +377,12 @@ CREATE TABLE IF NOT EXISTS `devices` (
   `DE_https_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
   `DE_rtsp` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT 'GR:Port:GR;LOCKED',
   `DE_rtsp_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
+  `DE_rtsps` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `DE_rtsps_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `DE_mqtt` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `DE_mqtt_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `DE_mqtts_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `DE_mqtts` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `DE_ports` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT 'GR:Port:GR;LOCKED',
   `DE_so` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'GR:Details:GR;',
   `DE_sw` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'GR:Details:GR;',
@@ -528,4 +559,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-07-16 17:23:24
+-- Dump completed on 2025-07-18 10:48:07

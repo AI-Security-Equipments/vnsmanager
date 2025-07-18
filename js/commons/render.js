@@ -1,21 +1,18 @@
 // File: commons/render.js
-import { u } from './utility.js'
+import { u, icons } from './utility.js'
 
 export function nodeCardTemplate(data) {
-  const url = data.https || data.http || '';
+  const url = (data.https && data.https !== 'N' ? data.https : data.http);
+
   const rtsp = data.rtsp || '';
   const keyIcon = data.hasCreds
     ? '<i class="fas fa-key node-key active" title="Credenziali disponibili"></i>'
     : '<i class="fas fa-key node-key" title="Nessuna credenziale"></i>';
-  const keyInfoIcon = `
-    <i class="fas fa-key node-key ${data.hasCreds ? 'active' : ''}"
-       title="${data.hasCreds ? 'Credenziali disponibili' : 'Nessuna credenziale'}"></i>`;
 
   return `
     <div class="card-node-det ${data.type}" data-id="${data.id}" role="button" tabindex="0"
          aria-label="${data.alias || data.label}, tipo ${data.type}"
          title="${data.alias || data.label} [${data.type}] - ${data.ip}">
-      ${keyInfoIcon}
       <div class="node-title ${data.status}">
         <i class="fas fa-${data.type}" aria-hidden="true"></i> ${data.label}
         ${keyIcon}   
@@ -24,7 +21,6 @@ export function nodeCardTemplate(data) {
         <div class="node-type">${data.type}</div>
         <div class="node-ip">${data.ip}</div>
         <div class="node-mac">${data.mac}</div>
-      </div>
       <div class="btn-group node-actions">
           ${url ? `
             <a href="#" class="btn btn-vnsmanager" title="Apri interfaccia" data-url="${url}">
@@ -37,10 +33,8 @@ export function nodeCardTemplate(data) {
           <a href="#" class="btn btn-vnsmanager" title="Informazioni">
             <i class="fas fa-info"></i>
           </a>
-          <a href="#" class="btn btn-vnsmanager btn-drag drag-handle" title="Trascina nodo">
-            <i class="fas fa-arrows-alt"></i>
-          </a>
         </div>
+      </div>
     </div>`;
 }
 

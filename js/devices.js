@@ -5,7 +5,6 @@ import { createCytoscapeInstance } from './assets/cytoscape/cytoscape.settings.j
 import { deviceDetailsTemplate } from './commons/render.js';
 import { tree, applyPinnedStyle, resetTreeMenuStyle } from './assets/tree.js';
 import { modal } from './assets/modal.js';
-import { initControlledDrag } from './commons/initControlledDrag.js';
 
 let cyInstance = null;
 
@@ -62,13 +61,6 @@ function waitForCardsAndThenInitTree(elements, cy) {
         if (allCardsReady || attempts > 20) {
             tree(elements, cyInstance, { onClickLabel: (id, span) => { openDeviceTabPanel(id); } });
             setupCardButtonEvents();
-cy.autolock(false);
-cy.autoungrabify(true); 
-            cy.nodes().forEach(n => {
-                n.grabbable(false);
-                console.log('NODO', n.id(), 'grabbable:', n.grabbable());
-            });
-
         } else {
             attempts++;
             requestAnimationFrame(checkReady);
@@ -99,35 +91,42 @@ async function openDeviceTabPanel(id) {
 
 function setupCardButtonEvents() {
     const cards = u.qAll('.card-node-det');
-
     cards.forEach(card => {
         const id = card.dataset.id;
         if (!id) return;
-
         const label = card.querySelector('.node-title')?.textContent.trim() || `Dispositivo ${id}`;
         const buttons = card.querySelectorAll('.node-actions .btn');
-
         buttons.forEach(btn => {
             ['mousedown', 'mouseup', 'mousemove'].forEach(event => { btn.addEventListener(event, e => e.stopPropagation(), true); });
-
             const icon = btn.querySelector('i');
             if (!icon) return;
-
             const url = btn.dataset.url || '';
             const isInfo = icon.classList.contains('fa-info');
             const isOpen = icon.classList.contains('fa-square-arrow-up-right');
             const isVideo = icon.classList.contains('fa-video');
-
             u.onC(btn, e => {
                 e.preventDefault();
                 e.stopPropagation();
-
                 if (isInfo) {
                     openDeviceTabPanel(id);
-                } else if ((isOpen || isVideo) && (url.startsWith('http') || url.startsWith('rtsp'))) {
-                    const type = isOpen ? 'http' : 'rtsp';
-                    openOrToggleModalForDevice({ id, type, url, label });
+                    return;
                 }
+                if (isOpen) {
+                    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+                        openOrToggleModalForDevice({ id, type: 'http', url, label });
+                    } else {
+                        toast.info('Nessuna interfaccia disponibile per questo dispositivo');
+                    }
+                    return;
+                }
+                if (isVideo) {
+                    if (url && url.startsWith('rtsp://')) {
+                        openOrToggleModalForDevice({ id, type: 'rtsp', url, label });
+                    } else {
+                        toast.info('Nessun flusso video disponibile per questo dispositivo');
+                    }
+                    return;
+                }                
             });
         });
     });
