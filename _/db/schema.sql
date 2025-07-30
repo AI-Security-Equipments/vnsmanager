@@ -1,4 +1,4 @@
--- Schema generato il Fri Jul 18 10:48:07 CEST 2025
+-- Schema generato il Wed Jul 30 19:27:39 CEST 2025
 CREATE DATABASE IF NOT EXISTS `vnsmanager_device`;
 USE `vnsmanager_device`;
 
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS `_imac_vendors` (
   UNIQUE KEY `Family` (`MV_family`,`MV_mac`) USING BTREE,
   KEY `Private_2` (`MV_private`,`MV_type`,`MV_update`),
   KEY `OUI` (`MV_mac`,`MV_custom_type`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=53919 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=53922 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -337,22 +337,6 @@ CREATE TABLE IF NOT EXISTS `alerts_type` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `device_self`
---
-
-DROP TABLE IF EXISTS `device_self`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE IF NOT EXISTS `device_self` (
-  `DS_id` int NOT NULL AUTO_INCREMENT,
-  `DS_licence` varchar(100) NOT NULL,
-  `DS_end_date` date NOT NULL,
-  `DS_uuid` varchar(255) NOT NULL,
-  PRIMARY KEY (`DS_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `devices`
 --
 
@@ -371,18 +355,13 @@ CREATE TABLE IF NOT EXISTS `devices` (
   `DE_hostname` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'GR:Device:GR:DEF',
   `DE_alias` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'GR:Device:GR:DEF',
   `DE_vendor` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'GR:Device:GR:DEF',
-  `DE_http` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT 'GR:Port:GR;LOCKED',
   `DE_http_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
-  `DE_https` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT 'GR:Port:GR;LOCKED',
+  `DE_8080_conn` varchar(2) NOT NULL DEFAULT 'N',
   `DE_https_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
-  `DE_rtsp` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT 'GR:Port:GR;LOCKED',
   `DE_rtsp_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
-  `DE_rtsps` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `DE_rtsps_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `DE_mqtt` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `DE_mqtt_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `DE_mqtts_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `DE_mqtts` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `DE_rtsps_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'N',
+  `DE_mqtt_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'N',
+  `DE_mqtts_conn` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'N',
   `DE_ports` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci COMMENT 'GR:Port:GR;LOCKED',
   `DE_so` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'GR:Details:GR;',
   `DE_sw` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'GR:Details:GR;',
@@ -395,7 +374,7 @@ CREATE TABLE IF NOT EXISTS `devices` (
   `DE_server` varchar(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'N',
   PRIMARY KEY (`DE_id`),
   UNIQUE KEY `uniq_mac` (`DE_mac`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=522 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=892 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -414,26 +393,6 @@ CREATE TABLE IF NOT EXISTS `devices_mqtt` (
   `MQ_qos` tinyint DEFAULT '0',
   `MQ_retain` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`MQ_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `devices_onvif`
---
-
-DROP TABLE IF EXISTS `devices_onvif`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE IF NOT EXISTS `devices_onvif` (
-  `ON_id` int NOT NULL AUTO_INCREMENT,
-  `ON_DE_id` int NOT NULL,
-  `ON_capability` varchar(255) NOT NULL,
-  `ON_detail` text,
-  `ON_api_call` varchar(255) DEFAULT NULL,
-  `ON_enabled` tinyint(1) DEFAULT '1',
-  `ON_active` varchar(2) DEFAULT 'N',
-  `ON_current` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`ON_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -458,39 +417,56 @@ CREATE TABLE IF NOT EXISTS `devices_onvif_actions` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `devices_type`
+-- Table structure for table `devices_onvif_ops`
 --
 
-DROP TABLE IF EXISTS `devices_type`;
+DROP TABLE IF EXISTS `devices_onvif_ops`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE IF NOT EXISTS `devices_type` (
-  `DT_id` int NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`DT_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE IF NOT EXISTS `devices_onvif_ops` (
+  `OP_id` int NOT NULL AUTO_INCREMENT,
+  `ON_DE_id` int NOT NULL,
+  `OP_service` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `OP_operation` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `OP_type` enum('GET','SET','SUBSCRIBE','ACTION') NOT NULL,
+  `OP_support` enum('supported','inferred','unsupported','no_service','error') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `OP_verified` enum('tested','skipped') NOT NULL,
+  `OP_auth_needed` tinyint DEFAULT NULL,
+  `OP_join` int DEFAULT NULL,
+  `OP_last_check` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `OP_notes` text,
+  PRIMARY KEY (`OP_id`),
+  UNIQUE KEY `ON_DE_id` (`ON_DE_id`,`OP_service`,`OP_operation`) USING BTREE,
+  CONSTRAINT `devices_onvif_ops_ibfk_1` FOREIGN KEY (`ON_DE_id`) REFERENCES `devices` (`DE_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=563 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `nmap_devices`
+-- Table structure for table `devices_onvif_templates`
 --
 
-DROP TABLE IF EXISTS `nmap_devices`;
+DROP TABLE IF EXISTS `devices_onvif_templates`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE IF NOT EXISTS `nmap_devices` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `ip` varchar(45) DEFAULT NULL,
-  `hostname` varchar(255) DEFAULT NULL,
-  `mac` varchar(64) DEFAULT NULL,
-  `vendor` varchar(255) DEFAULT NULL,
-  `ports` text,
-  `services` text,
-  `device_type` varchar(255) DEFAULT NULL,
-  `scan_time` datetime DEFAULT CURRENT_TIMESTAMP,
-  `status` char(1) DEFAULT 'N',
-  `last_seen` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE IF NOT EXISTS `devices_onvif_templates` (
+  `ST_id` int NOT NULL AUTO_INCREMENT,
+  `ST_service` varchar(50) DEFAULT NULL,
+  `ST_command` varchar(100) DEFAULT NULL,
+  `ST_type` varchar(10) DEFAULT NULL,
+  `ST_action` varchar(255) DEFAULT NULL,
+  `ST_namespace` varchar(255) DEFAULT NULL,
+  `ST_soap` text,
+  `ST_signature` text,
+  `ST_updated` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `ST_args` json NOT NULL,
+  `ST_binding_type` varchar(20) NOT NULL,
+  `ST_version` varchar(40) NOT NULL,
+  `ST_binding` varchar(100) NOT NULL,
+  `ST_path` varchar(200) NOT NULL,
+  `ST_auth_type` enum('none','profile','schedule','credential') NOT NULL,
+  PRIMARY KEY (`ST_id`),
+  UNIQUE KEY `u_template` (`ST_service`,`ST_command`)
+) ENGINE=InnoDB AUTO_INCREMENT=1340 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -559,4 +535,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-07-18 10:48:07
+-- Dump completed on 2025-07-30 19:27:39
