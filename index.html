@@ -1,17 +1,39 @@
 <!DOCTYPE html>
-<html lang="{lang}">
+<html lang="en" data-bs-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VNS Manager - AI Security</title>
+    <meta name="theme-color" content="#3f3f3f">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>VNSManager</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/icon.png">
+    <link rel="apple-touch-icon" href="img/icon.png">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="loading" class="loading-overlay d-none" aria-live="polite" aria-busy="true">
+        <div class="loading-card">
+            <div class="spinner-border" role="status" aria-hidden="true"></div>
+            <div>
+                <div class="fw-bold">Loading…</div>
+                <div class="small text-secondary">Preparazione interfaccia</div>
+            </div>
+        </div>
+    </div>
+    <div class="app">
+        <aside class="app-sidebar"></aside>
+        <main id="app-main"> </main>
+    </div>
+
     <script src="js/bootstrap.bundle.min.js"></script>
     <script type="module" src="js/pages.js"></script>
-</head>
-<body>
-    <div id="loading" style="display:none">Loading...</div>
-    <div class="container">{content}</div>
 </body>
+
 </html>

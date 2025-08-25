@@ -1,6 +1,6 @@
 // File: /js/login.js
 
-import { router } from './pages.js';
+import { router } from '../../js/pages.js';
 import { post } from './common/net.js';
 
 router.postLoad['login'] = () => {

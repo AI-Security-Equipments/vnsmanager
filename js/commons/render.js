@@ -2,12 +2,28 @@
 import { u, icons } from './utility.js'
 
 export function nodeCardTemplate(data) {
-  const url = (data.https && data.https !== 'N' ? data.https : data.http);
+  const url  = data.https || data.http || '';
+  const rtsp = data.rtsps || data.rtsp || '';
 
-  const rtsp = data.rtsp || '';
   const keyIcon = data.hasCreds
     ? '<i class="fas fa-key node-key active" title="Credenziali disponibili"></i>'
     : '<i class="fas fa-key node-key" title="Nessuna credenziale"></i>';
+
+  // Badge protocolli (non invadenti)
+  const badges = `
+    <div class="node-badges d-flex gap-1 flex-wrap mt-1">
+      ${data.onvif === 'Y' ? '<span class="badge text-bg-secondary">ONVIF</span>' : ''}
+      ${data.mqtt  === 'Y' ? '<span class="badge text-bg-info">MQTT</span>' : ''}
+      ${data.mqtts === 'Y' ? '<span class="badge text-bg-info">MQTTS</span>' : ''}
+    </div>
+  `;
+
+  // Bottone ONVIF opzionale (se hai viewer interno)
+  const onvifBtn = (data.onvif === 'Y' && data.onvifUrl)
+    ? `<a href="#" class="btn btn-vnsmanager" title="Apri ONVIF" data-url="${data.onvifUrl}" data-action="open-onvif">
+         <i class="fas fa-cubes"></i>
+       </a>`
+    : '';
 
   return `
     <div class="card-node-det ${data.type}" data-id="${data.id}" role="button" tabindex="0"
@@ -15,13 +31,16 @@ export function nodeCardTemplate(data) {
          title="${data.alias || data.label} [${data.type}] - ${data.ip}">
       <div class="node-title ${data.status}">
         <i class="fas fa-${data.type}" aria-hidden="true"></i> ${data.label}
-        ${keyIcon}   
+        ${keyIcon}
       </div>
       <div class="node-info drag-handle">
         <div class="node-type">${data.type}</div>
         <div class="node-ip">${data.ip}</div>
         <div class="node-mac">${data.mac}</div>
-      <div class="btn-group node-actions">
+
+        ${badges}
+
+        <div class="btn-group node-actions mt-1">
           ${url ? `
             <a href="#" class="btn btn-vnsmanager" title="Apri interfaccia" data-url="${url}">
               <i class="fas fa-square-arrow-up-right"></i>
@@ -30,6 +49,7 @@ export function nodeCardTemplate(data) {
             <a href="#" class="btn btn-vnsmanager" title="Visualizza video" data-url="${rtsp}">
               <i class="fas fa-video"></i>
             </a>` : ''}
+          ${onvifBtn}
           <a href="#" class="btn btn-vnsmanager" title="Informazioni">
             <i class="fas fa-info"></i>
           </a>
@@ -41,7 +61,7 @@ export function nodeCardTemplate(data) {
 export function buildTreeMenuShell() {
   const wrapper = document.createElement('div');
   wrapper.id = 'tree-menu';
-  wrapper.className = 'position-absolute bg-white border rounded shadow';
+  wrapper.className = 'position-absolute border rounded shadow bg-dark text-white';
   wrapper.style.cssText = 'top: 100px; left: 280px; width: 250px; z-index: 1040;';
 
   wrapper.innerHTML = `

@@ -1,41 +1,42 @@
 // File: js/devices.js
-import { u, store, toast } from './commons/utility.js';
-import { post } from './commons/net.js';
-import { createCytoscapeInstance } from './assets/cytoscape/cytoscape.settings.js';
-import { deviceDetailsTemplate } from './commons/render.js';
-import { tree, applyPinnedStyle, resetTreeMenuStyle } from './assets/tree.js';
-import { modal } from './assets/modal.js';
+import { u, store, toast } from '../../js/commons/utility.js';
+import { post } from '../../js/commons/net.js';
+import { createCytoscapeInstance } from '../../js/assets/cytoscape/cytoscape.settings.js';
+import { deviceDetailsTemplate } from '../../js/commons/render.js';
+import { tree, applyPinnedStyle, resetTreeMenuStyle } from '../../js/assets/tree.js';
+import { modal } from '../../js/assets/modal.js';
 
 let cyInstance = null;
+const BASE = '/vnsmanager';
+const WS = `${BASE}/ws`;
 
-window.addEventListener("DOMContentLoaded", async () => {
-    try {
-        const container = u.gI("cy");
-        if (!container) throw new Error("Container #cy non trovato");
+export async function init() {
+  try {
+    const container = u.gI('cy');
+    if (!container) throw new Error('Container #cy non trovato');
 
-        toast.show('<i class="fas fa-spinner fa-spin"></i> Caricamento dispositivi...', 'info', { autohide: false });
-        const elements = await post("/ws/ws_devices?/devices/get_all", {});
-        if (!Array.isArray(elements)) return toast.error("Dati dispositivi non validi");
+    const elements =
+      window.__elements ||
+      await (await fetch(`${WS}/ws_devices?/devices/get_all`)).json();
 
-        cyInstance = createCytoscapeInstance(container, elements);
-        waitForCardsAndThenInitTree(elements, cyInstance);
-        toast.success("Dispositivi caricati");
-    } catch (e) {
-        toast.error(`Errore caricamento: ${e.message}`);
-    }
+    cyInstance = createCytoscapeInstance(container, elements);
+    waitForCardsAndThenInitTree(elements, cyInstance);
+    toast.success('Dispositivi caricati');
 
     u.onC(u.gI('close-tab-panel'), () => {
-        const panel = u.gI('device-tab-panel');
-        const content = u.gI('tab-content');
-        const treeMenu = u.gI('tree-menu');
-
-        panel.classList.remove('show', 'right-expand');
-        panel.style.visibility = 'hidden';
-        content.innerHTML = '';
-        resetTreeMenuStyle(treeMenu);
+      const panel = u.gI('device-tab-panel');
+      const content = u.gI('tab-content');
+      const treeMenu = u.gI('tree-menu');
+      panel.classList.remove('show', 'right-expand');
+      panel.style.visibility = 'hidden';
+      content.innerHTML = '';
+      resetTreeMenuStyle(treeMenu);
     });
+  } catch (e) {
+    toast.error(`Errore caricamento: ${e.message}`);
+  }
+}
 
-});
 
 export async function loadDeviceDetails(deviceId) {
     const panel = u.gI('sidepanel-info');
@@ -126,7 +127,7 @@ function setupCardButtonEvents() {
                         toast.info('Nessun flusso video disponibile per questo dispositivo');
                     }
                     return;
-                }                
+                }
             });
         });
     });

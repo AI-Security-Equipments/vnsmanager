@@ -1,6 +1,5 @@
 // File: assets/tree.js
 import { u, store, icons } from '../commons/utility.js';
-import { loadDeviceDetails } from '../devices.js';
 import { cytoscapeControlsTemplate, buildTreeMenuShell, renderTreeFiltersContainer } from '../commons/render.js';
 
 let treeState = {
