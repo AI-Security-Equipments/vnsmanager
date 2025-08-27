@@ -4,15 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VNS Network Dashboard</title>
+    <meta name="theme-color" content="#3f3f3f">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>VNSManager</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@200..800&display=swap" rel="stylesheet">
-    <link href="css/devices.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@100..900&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" sizes="32x32" href="img/icon.png">
     <link rel="apple-touch-icon" href="img/icon.png">
+    <link href="css/style.css" rel="stylesheet">
 </head>
 
 <body>
@@ -28,27 +30,256 @@
         </div>
     </div>
 
-    <div id="main">
-        <div id="cy"></div>
-    </div>
+<div class="app">
+        <aside class="app-sidebar">
+            <div class="app-brand">
+                <i class="fa-solid fa-hexagon"></i>
+                <div class="app-brand__label app-brand__logo"><span>VNS</span>Manager</div>
+                <button class="btn  btn-sm app-brand__toggle" type="button" data-role="sidebar-toggle" aria-label="Toggle sidebar" data-bound="1">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
 
-    <div id="node-popover" class="popover bs-popover-auto" role="tooltip"
-        style="position:absolute; display:none; z-index:1050;">
-        <div class="popover-arrow"></div>
-        <h3 class="popover-header"></h3>
-        <div class="popover-body"></div>
-    </div>
+            <div class="d-flex justify-content-around p-2">
+                <span class="badge text-bg-primary">0</span>
+                <span class="badge text-bg-success">0</span>
+                <span class="badge text-bg-warning">0</span>
+                <span class="badge text-bg-danger">0</span>
+            </div>
 
-    <div id="device-tab-panel" class="offcanvas offcanvas-end" tabindex="-1">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="tab-title">Dettagli dispositivo</h5>
-            <button type="button" class="btn-close" id="close-tab-panel" aria-label="Chiudi"></button>
+            <div class="sidebar-menu">
+                <div id="sidebar-menu" class="sidebar-menu__scroll">
+
+                    <nav aria-label="Main sidebar">
+
+
+                        <!-- Gruppi con un solo pannello aperto -->
+                        <div class="accordion accordion-flush" id="sidebarAcc">
+
+                            <!-- Devices -->
+                            <div class="accordion-item bg-transparent border-0">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed px-2" type="button" data-bs-toggle="collapse" data-bs-target="#accDevices" aria-expanded="false" aria-controls="accDevices">
+                                        <i class="fa-solid fa-network-wired me-2"></i><span data-label="">Devices</span>
+                                    </button>
+                                </h2>
+                                <div id="accDevices" class="accordion-collapse collapse" data-bs-parent="#sidebarAcc">
+                                    <div class="accordion-body py-2 px-0">
+                                        <ul class="nav flex-column small">
+                                            <li class="nav-item"><a class="nav-link ps-4" href="#devices/map"><i class="fa-solid fa-map me-2"></i>Map</a></li>
+                                            <li class="nav-item"><a class="nav-link ps-4" href="#devices/cams"><i class="fa-solid fa-video me-2"></i>Cams</a></li>
+                                            <li class="nav-item"><a class="nav-link ps-4" href="#devices/mqtt"><i class="fa-solid fa-plug me-2"></i>Mqtt</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Video -->
+                            <div class="accordion-item bg-transparent border-0">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed px-2" type="button" data-bs-toggle="collapse" data-bs-target="#accVideo" aria-expanded="false" aria-controls="accVideo">
+                                        <i class="fa-solid fa-film me-2"></i><span data-label="">Video</span>
+                                    </button>
+                                </h2>
+                                <div id="accVideo" class="accordion-collapse collapse" data-bs-parent="#sidebarAcc">
+                                    <div class="accordion-body py-2 px-0">
+                                        <ul class="nav flex-column small">
+                                            <li class="nav-item"><a class="nav-link ps-4" href="#video/edit"><i class="fa-regular fa-pen-to-square me-2"></i>Edit</a></li>
+                                            <li class="nav-item"><a class="nav-link ps-4" href="#video/stream"><i class="fa-solid fa-tower-broadcast me-2"></i>Stream</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Settings -->
+                            <div class="accordion-item bg-transparent border-0">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed px-2" type="button" data-bs-toggle="collapse" data-bs-target="#accSettings" aria-expanded="false" aria-controls="accSettings">
+                                        <i class="fa-solid fa-gear me-2"></i><span data-label="">Settings</span>
+                                    </button>
+                                </h2>
+                                    <div class="accordion-body py-2 px-0">
+                                        <ul class="nav flex-column small">
+                                            <li class="nav-item"><a class="nav-link ps-4" href="#settings/users"><i class="fa-regular fa-user me-2"></i>Users</a></li>
+                                            <li class="nav-item"><a class="nav-link ps-4" href="#settings/pages"><i class="fa-regular fa-file-lines me-2"></i>Pages</a></li>
+                                            <li class="nav-item"><a class="nav-link ps-4" href="#settings/join"><i class="fa-solid fa-diagram-project me-2"></i>Join</a></li>
+                                            <li class="nav-item"><a class="nav-link ps-4" href="#settings/onvif"><i class="fa-solid fa-camera me-2"></i>Onvif</a></li>
+                                            <li class="nav-item"><a class="nav-link ps-4" href="#settings/mqtt"><i class="fa-solid fa-plug me-2"></i>Mqtt</a></li>
+                                            <li class="nav-item"><a class="nav-link ps-4" href="#settings/custom"><i class="fa-solid fa-wand-magic-sparkles me-2"></i>Script</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Voci singole -->
+                            <ul class="nav flex-column mb-2">
+                                <li class="nav-item">
+                                    <a class="nav-link px-2" href="#action"><i class="fa-solid fa-bolt me-2"></i><span data-label="">Action</span></a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link px-2" href="#download"><i class="fa-solid fa-download me-2"></i><span data-label="">Download</span></a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link px-2" href="#download"><i class="fa-solid fa-book me-2"></i><span data-label="">Manuale &amp; Info</span></a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link px-2" href="#download"><i class="fa-solid fa-file-invoice me-2"></i><span data-label="">Licenza</span></a>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+
+
+                </div>
+            </div>
+
+            <div id="sidebar-release" class="sidebar-release">v1.0.0</div>
+        </aside>
+
+        <main id="app-main">&lt;    <div class="mx-auto card-max">
+      <div class="card shadow-sm border-0">
+        <!-- Header -->
+        <div class="card-header bg-white border-0 py-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="flex-grow-1">
+              <h5 class="card-title mb-0">Titolo Card</h5>
+              <small class="text-body-secondary">Sottotitolo o descrizione breve</small>
+            </div>
+            <div class="btn-toolbar" role="toolbar" aria-label="Azioni card">
+              <div class="btn-group me-2" role="group">
+                <button type="button" class="btn btn-outline-primary btn-sm">Azione</button>
+                <button type="button" class="btn btn-primary btn-sm">Salva</button>
+              </div>
+              <div class="btn-group" role="group">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  Altro
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><button class="dropdown-item" type="button">Duplica</button></li>
+                  <li><button class="dropdown-item" type="button">Esporta</button></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><button class="dropdown-item text-danger" type="button">Elimina</button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="offcanvas-body" id="tab-content"></div>
-    </div>
 
+        <!-- Immagine (facoltativa) -->
+        <!-- <img src="https://picsum.photos/1200/300" class="card-img-top" alt=""> -->
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs px-3 pt-2 border-0" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-info" type="button" role="tab" aria-controls="tab-info" aria-selected="true">Info</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-dati" type="button" role="tab" aria-controls="tab-dati" aria-selected="false" tabindex="-1">Dati</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-log" type="button" role="tab" aria-controls="tab-log" aria-selected="false" tabindex="-1">Log</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- TAB: Info -->
+          <div class="tab-pane fade active show" id="tab-info" role="tabpanel">
+            <div class="card-body">
+              <p class="card-text">Testo introduttivo della card come base per la tua pagina.</p>
+
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Titolo</label>
+                  <input type="text" class="form-control" placeholder="Inserisci titolo">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Stato</label>
+                  <select class="form-select">
+                    <option value="">Seleziona…</option>
+                    <option>Bozza</option>
+                    <option>Pubblicato</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Descrizione</label>
+                  <textarea class="form-control" rows="3" placeholder="Testo…"></textarea>
+                </div>
+              </div>
+
+              <div class="mt-3 d-flex align-items-center gap-3">
+                <div class="progress flex-grow-1" role="progressbar" aria-label="Avanzamento" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100">
+                  <div class="progress-bar" style="width:45%">45%</div>
+                </div>
+                <span class="badge text-bg-success">OK</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: Dati -->
+          <div class="tab-pane fade" id="tab-dati" role="tabpanel">
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>#</th>
+                      <th>Nome</th>
+                      <th>Valore</th>
+                      <th class="text-end">Azioni</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>1</td>
+                      <td>Parametro A</td>
+                      <td>123</td>
+                      <td class="text-end">
+                        <button class="btn btn-sm btn-outline-secondary">Modifica</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>2</td>
+                      <td>Parametro B</td>
+                      <td>456</td>
+                      <td class="text-end">
+                        <button class="btn btn-sm btn-outline-secondary">Modifica</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <ul class="list-group list-group-flush mt-3">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  Elemento 1 <span class="badge text-bg-primary rounded-pill">14</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  Elemento 2 <span class="badge text-bg-secondary rounded-pill">7</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- TAB: Log -->
+          <div class="tab-pane fade" id="tab-log" role="tabpanel">
+            <div class="card-body">
+              <pre class="mb-0 small bg-body-tertiary p-3 rounded" style="max-height:220px;overflow:auto;">
+              </pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer bg-white d-flex flex-wrap gap-2 justify-content-between align-items-center">
+          <small class="text-body-secondary">Ultimo aggiornamento: <time datetime="2025-08-25">25/08/2025</time></small>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary">Annulla</button>
+            <button class="btn btn-primary">Conferma</button>
+          </div>
+        </div>
+      </div>
+    </div></main>
+    </div>
     <script src="js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="js/devices.js"></script>
-</body>
+ù</body>
 
 </html>

@@ -1,5 +1,23 @@
 RewriteEngine On
-RewriteBase /vnsmanager/ws/
+Options -MultiViews
+
+# Default page
+DirectoryIndex ws.php
+
+# /vnsmanager/ws/ → ws.php
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME}.php -f
-RewriteRule ^(.*)$ $1.php [L]
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^$ ws.php [L,QSA]
+
+# Nega tutti i .php tranne ws.php
+<FilesMatch "^(?!ws\.php$).*\.php$">
+  Require all denied
+</FilesMatch>
+
+# Consenti ws.php solo da localhost/LAN
+<Files "ws.php">
+  Require ip 127.0.0.1 ::1
+  Require ip 10.0.0.0/8
+  Require ip 192.168.0.0/16
+  Require ip 172.16.0.0/12
+</Files>

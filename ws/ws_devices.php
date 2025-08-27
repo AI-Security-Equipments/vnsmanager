@@ -2,19 +2,45 @@
 require_once '../_/start.php';
 header('Content-Type: application/json');
 
-class devices {
-    public function __construct() {}
+$x = $input['action'] ?? '';
+switch ($x) {
+    case 'get_all':    $x = $this->get_lists(); break;
+    case 'get_all':    $x = $this->get_all(); break;
+    case 'get_device': $x = $this->get_device($b); break;
+}
+echo $x;
 
-    public function _do ($a, $b = NULL) {
-        $x = '';
-        switch ($a) {
-            case 'get_all':    $x = $this->get_all(); break;
-            case 'get_device': $x = $this->get_device($b); break;
+    function get_lists() {
+        global $db;
+        $rows = $db->runQuery('select all lists', []);
+
+        $cams = $iot = $other = [];
+        foreach ($rows as $r) {
+            $item = [
+            'status'      => $r['DE_status'],
+            'type'        => $r['DE_type'],
+            'ip'          => $r['DE_ip'],
+            'mac'         => $r['DE_mac'],
+            'hostname'    => $r['DE_hostname'],
+            'alias'       => $r['DE_alias'],
+            'vendor'      => $r['DE_vendor'],
+            'so'          => $r['DE_so'],
+            'sw'          => $r['DE_sw'],
+            'last_check'  => $r['DE_last_check'],
+            'user'        => $r['DE_user'],
+            'password'    => $r['DE_password'],
+            'web_conn'    => $r['web_conn'],
+            ];
+
+            if (!empty($r['is_cam'])) $cams[] = $item;     // può finire in più bucket
+            if (!empty($r['is_iot'])) $iot[]  = $item;
+            if (empty($r['is_cam']) && empty($r['is_iot'])) $other[] = $item;
         }
-        echo $x;
+
+        sendResponse(200, ['data' => ['cams'=>$cams, 'iot'=>$iot, 'other'=>$other]]);
     }
 
-    private function normalizeType(string $raw): string {
+    function normalizeType(string $raw): string {
         $raw = trim($raw);
         $upper = strtoupper($raw);
         if (in_array($upper, ['MAIN','SUBNET','TYPE'])) return $upper;
@@ -23,7 +49,7 @@ class devices {
     }
 
     /** Costruisce URL utili in base ai flag *_conn e IP */
-    private function buildUrls(array $dev): array {
+    function buildUrls(array $dev): array {
         $ip   = $dev['DE_ip'] ?? '';
         $p8080= ($dev['DE_8080_conn'] ?? 'N') === 'Y';
         $http = ($dev['DE_http_conn']  ?? 'N') === 'Y';
@@ -46,7 +72,7 @@ class devices {
     }
 
     /** Nodo virtuale rapido (SUBNET/TYPE) per reuse */
-    private function buildDeviceNode(array $d): array {
+    function buildDeviceNode(array $d): array {
         return [
             "DE_id"         => $d['id'],
             "DE_ip"         => $d['ip'] ?? '',
@@ -72,7 +98,7 @@ class devices {
     }
 
     /** Trasforma un record DB in elemento per Cytoscape/render.js */
-    private function formatElement(array $dev): array {
+    function formatElement(array $dev): array {
         $type = $this->normalizeType($dev['DE_type'] ?? 'unknown');
         $urls = $this->buildUrls($dev);
 
@@ -106,7 +132,7 @@ class devices {
         ];
     }
 
-    private function getPriority(array $dev): int {
+    function getPriority(array $dev): int {
         $type = strtoupper(trim($dev['DE_type'] ?? ''));
         $hops = (int)($dev['DE_hops'] ?? 0);
         return match (true) {
@@ -118,13 +144,13 @@ class devices {
         };
     }
 
-    private function buildEdge(string|int $source, string|int $target, int &$edgeId): array {
+    function buildEdge(string|int $source, string|int $target, int &$edgeId): array {
         return ["data" => [
             "id" => "e".$edgeId++, "source"=>$source, "target"=>$target, "group"=>"edges"
         ]];
     }
 
-    private function get_all(): string {
+    function get_all(): string {
         global $db;
         $_SESSION["debug"] = 0;
         $rows = $db->doQuery("get_all_devices", []);
@@ -195,7 +221,7 @@ class devices {
         return json_encode(array_merge($elements, $edges), JSON_PRETTY_PRINT);
     }
 
-    private function get_device($id) {
+    function get_device($id) {
         global $db;
         $_SESSION["debug"] = false;
 
@@ -214,14 +240,43 @@ class devices {
             'label'=>$device['DE_alias'] ?: ($device['DE_vendor'] ?: ($device['DE_type'] ?: 'Device'))
         ]);
     }
-}
 
-$CC = new devices();
-$uri = trim($_SERVER['QUERY_STRING']);
-$parts = explode('/', $uri);
+    function table_device_header($id) {
+        global $db;
+        $_SESSION["debug"] = false;
 
-if (in_array('devices', $parts)) {
-  if (in_array('get_all', $parts))   $CC->_do('get_all');
-  if (in_array('get_device', $parts))$CC->_do('get_device', $_POST['id']??0);
-}
+        $device  = $db->doQuery("get_devices_header", ["id"=>$id])[0] ?? null;
+        if (!$device) {
+            return json_encode(['ok'=>false,'html'=>'<p class="text-danger">Device non trovato.</p>']);
+        }
+        $data = [ 
+            cams    => $db->doQuery("get_single_mqtt",   ["id"=>$id]) ?? null,
+            iot     => $db->doQuery("get_single_onvif",  ["id"=>$id]) ?? null,
+            others  => $db->doQuery("get_single_action", ["id"=>$id]) ?? null
+        ];
+
+        $html = include 'device_tabs.php';
+        return json_encode([
+            'ok'=>true,
+            'html'=>$html,
+            'label'=>$device['DE_alias'] ?: ($device['DE_vendor'] ?: ($device['DE_type'] ?: 'Device'))
+        ]);
+    }
+
+    function table_device_list($id) {
+        global $db;
+        $_SESSION["debug"] = false;
+
+        $device  = $db->doQuery("get_devices_list", ["id"=>$id])[0] ?? null;
+        if (!$device) {
+            return json_encode(['ok'=>false,'html'=>'<p class="text-danger">Device non trovato.</p>']);
+        }
+
+            
+
+        return json_encode([
+            'ok'=>true,
+            'html'=>$header
+        ]);
+    }
 exit();

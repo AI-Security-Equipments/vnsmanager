@@ -1,0 +1,125 @@
+<div class="card shadow-lg border-0" style="
+    width: 100%;
+">
+  <!-- Header -->
+  <div class="card-header border-0 py-3">
+    <div class="d-flex align-items-center gap-3">
+      <div class="flex-grow-1">
+        <h5 class="card-title mb-0">Devices</h5>
+        <small class="text-body-secondary">tutti i devices trovati</small>
+      </div>
+      <div class="btn-toolbar" role="toolbar" aria-label="Azioni card"></div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs px-3 pt-2 border-0" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-cams" type="button" role="tab"
+        aria-controls="tab-info" aria-selected="true">Cams</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-iot" type="button" role="tab"
+        aria-controls="tab-dati" aria-selected="false" tabindex="-1">IOT</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-other" type="button" role="tab"
+        aria-controls="tab-log" aria-selected="false" tabindex="-1">Altro</button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <!-- TAB: Info -->
+    <div class="tab-pane fade show active" id="tab-cams" role="tabpanel">
+      <div class="card-body">
+        <table data-toggle="table" 
+        data-url="data1.json"
+  data-pagination="true"
+  data-search="true"
+        id="table-cams">
+          <thead>
+            <tr>
+              <th>Item ID</th>
+              <th>Item Name</th>
+              <th>Item Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Item 1</td>
+              <td>$1</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Item 2</td>
+              <td>$2</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB: Dati -->
+    <div class="tab-pane fade" id="tab-iot" role="tabpanel">
+      <div class="card-body">
+        <table data-toggle="table" id="table-iot">
+          <thead>
+            <tr>
+              <th>Item ID</th>
+              <th>Item Name</th>
+              <th>Item Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Item 1</td>
+              <td>$1</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Item 2</td>
+              <td>$2</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-pane fade" id="tab-other" role="tabpanel">
+      <div class="card-body">
+        <table data-toggle="table" id="table-others">
+          <thead>
+            <tr>
+              <th>Item ID</th>
+              <th>Item Name</th>
+              <th>Item Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Item 1</td>
+              <td>$1</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Item 2</td>
+              <td>$2</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="card-footer d-flex flex-wrap gap-2 justify-content-between align-items-center">
+    <small class="text-body-secondary">Ultimo aggiornamento: <time datetime="2025-08-25">25/08/2025</time></small>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary"><i class="fa fa-refresh"></i></button>
+    </div>
+  </div>
+</div>
+</div>

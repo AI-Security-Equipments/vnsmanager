@@ -5,8 +5,8 @@
   --vns-primary-30: #rgba(235, 255, 0, 0.3);
   --vns-primary-50: #rgba(235, 255, 0, 0.5);
   --vns-primary-70: #rgba(235, 255, 0, 0.7);
-  --vns-sidebar-bg: #333333;
-  --vns-surface-bg: #303030;
+  --vns-sidebar-bg: #000e23 ;
+  --vns-surface-bg: #00152f;
 }
 
 html{ color-scheme: dark; }

@@ -12,9 +12,9 @@ let activeRequests = 0;
  * @param {boolean} [showLoading=true] - Se false, non mostra il loading spinner.
  * @returns {Promise<object>} - Risposta JSON o oggetto con ok: false.
  */
-export async function post(url, data, onDone = null, showLoading = true) {
+export async function post(service, action, data = {}, onDone = null, showLoading = true) {
   let toastId;
-  
+
   try {
     if (showLoading) {
       activeRequests++;
@@ -26,53 +26,46 @@ export async function post(url, data, onDone = null, showLoading = true) {
             </div>
             Loading...
           </div>
-        `, 'info', { 
-          autohide: false,
-          delay: 30000 // Fallback in caso di richieste bloccate
-        });
+        `, 'info', { autohide: false, delay: 30000 });
       }
     }
 
-    const res = await fetchWithTimeout(BASE_PATH + url, {
+    const url = BASE_PATH + '/ws/';            // default page = ws.php
+    const payload = { service, action, ...data };
+    console.log('POST', url, payload);
+    const res = await fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams(data)
+      body: new URLSearchParams(payload)
     });
-
     const json = await res.json();
-
+    console.log('Response', json);
     if (!json.ok) {
       const errorMsg = json.error || 'Errore sconosciuto';
       toast.error(errorMsg, { delay: 8000 });
-      logEvent('error_response', { url, error: errorMsg });
+      logEvent('error_response', { service, action, error: errorMsg });
     }
 
     if (json.forceLogout) {
       toast.warning('Reindirizzamento al login...', { delay: 2000 });
-      setTimeout(() => location.href = BASE_PATH + '/logout', 2000);
+      setTimeout(() => (location.href = BASE_PATH + '/logout'), 2000);
     }
 
     return json;
   } catch (err) {
-    const errMsg = err.message.includes('Timeout') 
-      ? 'Timeout: il server non ha risposto' 
+    const errMsg = err.message.includes('Timeout')
+      ? 'Timeout: il server non ha risposto'
       : 'Errore di rete';
-      
-    toast.error(errMsg, { 
-      subtext: 'Riprova più tardi',
-      delay: 10000 
-    });
-    logEvent('network_error', { url, message: err.message });
+
+    toast.error(errMsg, { subtext: 'Riprova più tardi', delay: 10000 });
+    logEvent('network_error', { service, action, message: err.message });
     return { ok: false, error: 'network' };
   } finally {
     if (showLoading) {
       activeRequests--;
       if (activeRequests === 0 && toastId) {
-        // Chiude il toast solo se è ancora visibile
         const toastEl = document.getElementById(toastId);
-        if (toastEl) {
-          bootstrap.Toast.getInstance(toastEl)?.hide();
-        }
+        if (toastEl) bootstrap.Toast.getInstance(toastEl)?.hide();
       }
     }
     if (typeof onDone === 'function') onDone();
@@ -137,7 +130,7 @@ export function logEvent(action, data = {}) {
       action,
       data
     };
-    navigator.sendBeacon(BASE_PATH + '/ws/ws_log.php', JSON.stringify(payload));
+    //navigator.sendBeacon('log', '', JSON.stringify(payload));
   } catch (e) {
     console.error('Logging failed:', e);
   }

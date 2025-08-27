@@ -33,5 +33,5 @@ if (empty($_SESSION['lang_cache'] ?? [])) {
     $_SESSION['lang_cache'] = $lang_cache;
 }
 
-echo json_encode($_SESSION['lang_cache'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+sendResponse(true, data: json_encode($_SESSION['lang_cache'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) ?? '{}');
 ?>

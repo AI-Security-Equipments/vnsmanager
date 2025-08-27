@@ -1,6 +1,6 @@
 // File: /js/pages.js
-
-const BASE_PATH = '/vnsmanager';
+import { post } from './commons/net.js';
+const BASE_PATH = '';
 export const messages = [];
 
 export const router = {
@@ -25,19 +25,10 @@ export const router = {
   async loadLang() {
     if (this.langLoaded || Object.keys(this.lang).length > 0) return;
     const lang = (navigator.language || 'en').slice(0, 2) || 'en';
-    try {
-      const res = await fetch(BASE_PATH + '/ws/ws_lang.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'lang=' + encodeURIComponent(lang)
-      });
-      this.lang = await res.json();
-      this.langLoaded = true;
-      window.lang = this.lang;
-    } catch (e) {
-      messages.push('Errore nel caricamento lingua: ' + e.message);
-      this.lang = {};
-    }
+    const res = await post('lang', 'interface', {lang: lang}, {}, false);
+    this.lang = await res?.data;
+    this.langLoaded = true;
+    window.lang = this.lang;
   },
 
   initSidebarToggle() {
@@ -69,6 +60,13 @@ export const router = {
     });
     mo.observe(document.documentElement, { childList: true, subtree: true });
   },
+
+async exists(url, signal) {
+    if (signal?.aborted) return false;
+    const f = this.normalizeUrl(url);
+    const res = await post('check', 'file', { f });
+    if (res?.ok) { return res?.data; } else { return false; }
+},
 
   async route() {
     // aborta eventuali fetch/HEAD in corso
@@ -111,98 +109,77 @@ export const router = {
     await this.loadPage(htmlPath, pageKey, ts, this.pageCtrl.signal, seq);
   },
 
-  async loadAssets(load_path, ts, signal, seq) {
-    const hostCss = `assets/css/${location.hostname.replace(/[^a-z0-9]/gi, '').toLowerCase()}.css`;
-    await Promise.allSettled([
-      this.checkAndLoad(`${load_path}.css`, (u) => this.loadCSS(u, ts, signal, seq), signal, seq),
-    ]);
-  },
-
-  async checkAndLoad(url, loader, signal, seq) {
-    try {
-      if (signal?.aborted) return false;
-      // path relativo a BASE_PATH per il server-side check
-      let rel = url.startsWith(BASE_PATH) ? url.slice(BASE_PATH.length) : url;
-      rel = rel.replace(/^\/+/, '');
-      const res = await fetch(`${BASE_PATH}/ws/check.php?f=${encodeURIComponent(rel)}`, { signal });
-      const ok = (await res.text()).trim() === '1';
-      if (signal?.aborted || seq !== this.routeSeq) return false;
-      if (!ok) return false;
-      return loader(url);
-    } catch { return false; }
-  },
-
-  async loadJS(src, ts, signal, seq) {
-    try {
-      if (signal?.aborted || seq !== this.routeSeq) return false;
-      return new Promise((resolve) => {
-        const script = document.createElement('script');
-        script.src = this.ver(src, ts);
-        script.type = 'module'; // ESM only
-        script.setAttribute('data-router', 'dynamic');
-        script.onload = () => resolve(true);
-        script.onerror = () => { script.remove(); resolve(false); };
-        document.head.appendChild(script);
-      });
-    } catch (e) { return false; }
-  },
-
-  async loadCSS(href, ts, signal, seq) {
-    try {
-      debugger;
-      if (signal?.aborted || seq !== this.routeSeq) return false;
-      return new Promise((resolve) => {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = this.ver(href, ts);
-        link.setAttribute('data-router', 'dynamic');
-        link.onload = () => resolve(true);
-        link.onerror = () => { messages.push('CSS mancante: ' + href); link.remove(); resolve(false); };
-        document.head.appendChild(link);
-      });
-    } catch (e) { return false; }
-  },
-
-  async runPageInit(pageKey, ts, seq) {
-    try {
-      const jsPath = `tmpl/${pageKey}.js`;
-      const exists = await this.checkAndLoad(jsPath, async () => true, this.assetsCtrl.signal, seq);
-      if (!exists || seq !== this.routeSeq) return;
-      const mod = await import(this.ver(jsPath, ts));
-      if (typeof mod.init === 'function') await mod.init();
-    } catch {}
-  },
-
-  async loadPage(path, pageKey, ts, signal, seq) {
-    this.showLoading(true);
-    this.cleanup();
-    try {
-      const res = await fetch(path, { signal });
-      if (!res.ok) throw new Error('Not found');
-      const html = await res.text();
-      if (seq !== this.routeSeq) return; // route cambiata, esco
-      const translated = this.applyTranslations(html);
-      this.container.innerHTML = translated;
-
-      await this.runPageInit(pageKey, ts, seq);
-
-      if (this.postLoad[pageKey]) this.postLoad[pageKey]();
-      this.currentPage = pageKey;
-    } catch (err) {
-      if (err?.name === 'AbortError') return;
-      try {
-        const fallback = await fetch(`${BASE_PATH}/tmpl/error/404.html`, { signal });
-        const html = this.applyTranslations(await fallback.text());
-        if (seq !== this.routeSeq) return;
-        this.container.innerHTML = html;
-      } catch {
-        if (seq !== this.routeSeq) return;
-        this.container.innerHTML = '<h1>404 - Pagina non trovata</h1>';
-      }
-    } finally {
-      if (seq === this.routeSeq) this.showLoading(false);
+async loadAssets(load_path, ts, signal, seq) {
+  const pageCss = `${load_path}.css`;
+  const hostCss = `assets/css/${location.hostname.replace(/[^a-z0-9]/gi, '').toLowerCase()}.css`;
+  const tasks = [];
+  tasks.push((async () => {
+    if (await this.exists(pageCss, signal) && seq === this.routeSeq) {
+      await this.loadCSS(pageCss, ts, signal, seq);
     }
-  },
+  })());
+  tasks.push((async () => {
+    if (await this.exists(hostCss, signal) && seq === this.routeSeq) {
+      await this.loadCSS(hostCss, ts, signal, seq);
+    }
+  })());
+  await Promise.all(tasks);
+},
+
+async loadCSS(href, ts, signal, seq) {
+  try {
+    if (signal?.aborted || seq !== this.routeSeq) return false;
+    return new Promise((resolve) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = this.ver(href, ts);
+      link.setAttribute('data-router', 'dynamic');
+      link.onload = () => resolve(true);
+      link.onerror = () => { messages.push('CSS mancante: ' + href); link.remove(); resolve(false); };
+      document.head.appendChild(link);
+    });
+  } catch { return false; }
+},
+
+async runPageInit(pageKey, ts, seq) {
+  try {
+    const jsPath = `tmpl/${pageKey}.js`;
+    if (!(await this.exists(jsPath, this.assetsCtrl.signal))) return;
+    if (seq !== this.routeSeq) return;
+    const mod = await import(this.ver('vnsmanager/'+jsPath, ts));   // ESM
+    if (seq !== this.routeSeq) return;
+    if (typeof mod.init === 'function') await mod.init();
+  } catch {}
+},
+
+async loadPage(path, pageKey, ts, signal, seq) {
+  this.showLoading(true);
+  this.cleanup();
+//  try {
+    let pageExists = await this.exists(path, signal);
+    const res = await fetch(path, { signal });
+    const html = await res.text();
+    if (seq !== this.routeSeq) return;
+    const translated = this.applyTranslations(html);
+    this.container.innerHTML = translated;
+    await this.runPageInit(pageKey, ts, seq);
+    if (this.postLoad[pageKey]) this.postLoad[pageKey]();
+    this.currentPage = pageKey;
+/*  } catch (err) {
+    if (err?.name === 'AbortError') return;
+    try {
+      const fallback = await fetch(`${BASE_PATH}/tmpl/error/404.html`, { signal });
+      const html = this.applyTranslations(await fallback.text());
+      if (seq !== this.routeSeq) return;
+      this.container.innerHTML = html;
+    } catch {
+      if (seq !== this.routeSeq) return;
+      this.container.innerHTML = '<h1>404 - Pagina non trovata</h1>';
+    }
+  } finally {
+    if (seq === this.routeSeq) this.showLoading(false);
+  }*/
+},
 
   cleanup() {
     if (this.unload[this.currentPage]) {
