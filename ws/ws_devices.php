@@ -4,15 +4,15 @@ header('Content-Type: application/json');
 
 $x = $input['action'] ?? '';
 switch ($x) {
-    case 'get_all':    $x = $this->get_lists(); break;
-    case 'get_all':    $x = $this->get_all(); break;
-    case 'get_device': $x = $this->get_device($b); break;
+    case 'lists':    $x = get_lists(); break;
+    case 'get_all':    $x = get_all(); break;
+    case 'get_device': $x = get_device($b); break;
 }
 echo $x;
 
     function get_lists() {
         global $db;
-        $rows = $db->runQuery('select all lists', []);
+        $rows = $db->doQuery('select all lists', []);
 
         $cams = $iot = $other = [];
         foreach ($rows as $r) {
@@ -37,7 +37,7 @@ echo $x;
             if (empty($r['is_cam']) && empty($r['is_iot'])) $other[] = $item;
         }
 
-        sendResponse(200, ['data' => ['cams'=>$cams, 'iot'=>$iot, 'other'=>$other]]);
+        sendResponse(true, ['data' => ['cams'=>$cams, 'iot'=>$iot, 'other'=>$other]]);
     }
 
     function normalizeType(string $raw): string {
@@ -99,8 +99,8 @@ echo $x;
 
     /** Trasforma un record DB in elemento per Cytoscape/render.js */
     function formatElement(array $dev): array {
-        $type = $this->normalizeType($dev['DE_type'] ?? 'unknown');
-        $urls = $this->buildUrls($dev);
+        $type = normalizeType($dev['DE_type'] ?? 'unknown');
+        $urls = buildUrls($dev);
 
         return [
             "data" => [
@@ -123,7 +123,7 @@ echo $x;
                 "hasCreds"  => !empty($dev['DE_user']) && !empty($dev['DE_password']),
                 "hops"      => (int)($dev['DE_hops'] ?? 0),
                 "link_to"   => $dev['DE_link_to'] ?? 0,
-                "priority"  => $this->getPriority($dev),
+                "priority"  => getPriority($dev),
                 "isVirtual" => in_array($type, ['MAIN','SUBNET','TYPE']) ? 1 : 0,
                 "onvifUrl"  => (($dev['DE_onvif_conn'] ?? 'N') === 'Y' && !empty($dev['DE_ip']))
                         ? '/vnsmanager/onvif/viewer.php?ip=' . urlencode($dev['DE_ip'])
@@ -167,7 +167,8 @@ echo $x;
             if ((int)($r['DE_hops'] ?? 0) === 0) {
                 $r['DE_vendor'] = 'VNS MANAGER';
                 $r['DE_type']   = 'MAIN';
-                $elements[] = $this->formatElement($r);
+//            var_dump($r);
+                $elements[] = formatElement($r);
                 $mainId = $r['DE_id'];
                 unset($rows[$i]);
                 break;
@@ -177,7 +178,7 @@ echo $x;
 
         foreach ($rows as $r) {
             $subnet = !empty($r['DE_gateway']) ? str_replace('.', '', $r['DE_gateway']) : null;
-            $firstType = $this->normalizeType($r['DE_type'] ?? '');
+            $firstType = normalizeType($r['DE_type'] ?? '');
             $typeKey = ($subnet ?? 'nosub') . '_' . $firstType;
 
             // SUBNET
@@ -185,14 +186,14 @@ echo $x;
                 $subnetId = "sub" . str_pad(count($subnetMap)+1, 2, '0', STR_PAD_LEFT);
                 $subnetMap[$subnet] = $subnetId;
 
-                $elements[] = $this->formatElement($this->buildDeviceNode([
+                $elements[] = formatElement(buildDeviceNode([
                     'id' => $subnetId,
                     'ip' => $r['DE_gateway'] ?? '',
                     'vendor' => 'SUBNET',
                     'type' => 'SUBNET',
                     'link_to' => $mainId
                 ]));
-                $edges[] = $this->buildEdge($mainId, $subnetId, $edgeId);
+                $edges[] = buildEdge($mainId, $subnetId, $edgeId);
             }
 
             // TYPE
@@ -200,22 +201,22 @@ echo $x;
                 $typeId = "type" . str_pad(count($typeMap)+1, 2, '0', STR_PAD_LEFT);
                 $typeMap[$typeKey] = $typeId;
 
-                $elements[] = $this->formatElement($this->buildDeviceNode([
+                $elements[] = formatElement(buildDeviceNode([
                     'id' => $typeId,
                     'ip' => $r['DE_gateway'] ?? '',
                     'vendor' => $firstType,
                     'type' => 'TYPE',
                     'link_to' => $subnetMap[$subnet]
                 ]));
-                $edges[] = $this->buildEdge($subnetMap[$subnet], $typeId, $edgeId);
+                $edges[] = buildEdge($subnetMap[$subnet], $typeId, $edgeId);
             }
 
             // DEVICE
             $linkTo = $typeMap[$typeKey] ?? $subnetMap[$subnet] ?? 0;
             $r['DE_link_to'] = $linkTo;
 
-            $elements[] = $this->formatElement($r);
-            if ($linkTo) $edges[] = $this->buildEdge($linkTo, $r['DE_id'], $edgeId);
+            $elements[] = formatElement($r);
+            if ($linkTo) $edges[] = buildEdge($linkTo, $r['DE_id'], $edgeId);
         }
 
         return json_encode(array_merge($elements, $edges), JSON_PRETTY_PRINT);

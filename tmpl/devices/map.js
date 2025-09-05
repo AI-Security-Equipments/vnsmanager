@@ -14,10 +14,9 @@ export async function init() {
   try {
     const container = u.gI('cy');
     if (!container) throw new Error('Container #cy non trovato');
-
+debugger;
     const elements =
-      window.__elements ||
-      await (await fetch(`${WS}/ws_devices?/devices/get_all`)).json();
+      window.__elements || await post('devices', 'get_all');
 
     cyInstance = createCytoscapeInstance(container, elements);
     waitForCardsAndThenInitTree(elements, cyInstance);

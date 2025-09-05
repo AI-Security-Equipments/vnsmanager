@@ -1,10 +1,10 @@
 :root {
   --sidebar-w: 280px;
   --vns-primary: #EBFF00;
-  --vns-primary-10: #rgba(235, 255, 0, 0.1);
-  --vns-primary-30: #rgba(235, 255, 0, 0.3);
-  --vns-primary-50: #rgba(235, 255, 0, 0.5);
-  --vns-primary-70: #rgba(235, 255, 0, 0.7);
+  --vns-primary-10: rgba(235, 255, 0, 0.1);
+  --vns-primary-30: rgba(235, 255, 0, 0.3);
+  --vns-primary-50: rgba(235, 255, 0, 0.5);
+  --vns-primary-70: rgba(235, 255, 0, 0.7);
   --vns-sidebar-bg: #000e23 ;
   --vns-surface-bg: #00152f;
 }

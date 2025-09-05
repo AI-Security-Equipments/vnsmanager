@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') { sendResponse(false, [], '', 'Error 
        case 'login':
             require_once 'ws_login.php';
             break;
-        case 'lists':
+        case 'devices':
             require_once 'ws_devices.php';
             break;
         default:

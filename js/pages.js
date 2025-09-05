@@ -142,14 +142,13 @@ async loadCSS(href, ts, signal, seq) {
 },
 
 async runPageInit(pageKey, ts, seq) {
-  try {
     const jsPath = `tmpl/${pageKey}.js`;
     if (!(await this.exists(jsPath, this.assetsCtrl.signal))) return;
     if (seq !== this.routeSeq) return;
     const mod = await import(this.ver('vnsmanager/'+jsPath, ts));   // ESM
     if (seq !== this.routeSeq) return;
     if (typeof mod.init === 'function') await mod.init();
-  } catch {}
+  
 },
 
 async loadPage(path, pageKey, ts, signal, seq) {

@@ -5,7 +5,7 @@
   <div class="card-header border-0 py-3">
     <div class="d-flex align-items-center gap-3">
       <div class="flex-grow-1">
-        <h5 class="card-title mb-0">Devices</h5>
+        <h2 class="card-title mb-0">Devices</h2>
         <small class="text-body-secondary">tutti i devices trovati</small>
       </div>
       <div class="btn-toolbar" role="toolbar" aria-label="Azioni card"></div>
@@ -15,16 +15,13 @@
   <!-- Tabs -->
   <ul class="nav nav-tabs px-3 pt-2 border-0" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-cams" type="button" role="tab"
-        aria-controls="tab-info" aria-selected="true">Cams</button>
+      <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-cams" type="button" role="tab" aria-controls="tab-info" aria-selected="true">Cams</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-iot" type="button" role="tab"
-        aria-controls="tab-dati" aria-selected="false" tabindex="-1">IOT</button>
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-iot" type="button" role="tab" aria-controls="tab-dati" aria-selected="false" tabindex="-1">IOT</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-other" type="button" role="tab"
-        aria-controls="tab-log" aria-selected="false" tabindex="-1">Altro</button>
+      <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-other" type="button" role="tab" aria-controls="tab-log" aria-selected="false" tabindex="-1">Altro</button>
     </li>
   </ul>
 
@@ -32,84 +29,25 @@
     <!-- TAB: Info -->
     <div class="tab-pane fade show active" id="tab-cams" role="tabpanel">
       <div class="card-body">
-        <table data-toggle="table" 
-        data-url="data1.json"
-  data-pagination="true"
-  data-search="true"
-        id="table-cams">
-          <thead>
-            <tr>
-              <th>Item ID</th>
-              <th>Item Name</th>
-              <th>Item Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Item 1</td>
-              <td>$1</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Item 2</td>
-              <td>$2</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="vns-table-search-block" id="vns-table-cams"></div>
+        <div id="table-cams"></div>
       </div>
     </div>
 
     <!-- TAB: Dati -->
     <div class="tab-pane fade" id="tab-iot" role="tabpanel">
       <div class="card-body">
-        <table data-toggle="table" id="table-iot">
-          <thead>
-            <tr>
-              <th>Item ID</th>
-              <th>Item Name</th>
-              <th>Item Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Item 1</td>
-              <td>$1</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Item 2</td>
-              <td>$2</td>
-            </tr>
-          </tbody>
-        </table>
+        <div  class="vns-table-search-block" id="vns-table-iot"></div>
+        <div id="table-iot"></div>
+
       </div>
     </div>
 
-    <div class="tab-pane fade" id="tab-other" role="tabpanel">
+    <div  class="tab-pane fade" id="tab-other" role="tabpanel">
       <div class="card-body">
-        <table data-toggle="table" id="table-others">
-          <thead>
-            <tr>
-              <th>Item ID</th>
-              <th>Item Name</th>
-              <th>Item Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Item 1</td>
-              <td>$1</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Item 2</td>
-              <td>$2</td>
-            </tr>
-          </tbody>
-        </table>
+        <div  class="vns-table-search-block" id="vns-table-others"></div>
+        <div id="table-others"></div>
+
       </div>
     </div>
   </div>
@@ -123,3 +61,10 @@
   </div>
 </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable"></script>
+<script>
+  window.jspdf = window.jspdf || {};
+  window.jspdf.jsPDF = window.jspdf.jsPDF || window.jspdf.jsPDF || window.jsPDF;
+</script>
